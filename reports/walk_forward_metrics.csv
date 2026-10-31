@@ -1,0 +1,7 @@
+Metric,Value
+Accuracy,0.5129740518962076
+Balanced Accuracy,0.48479371505687296
+ROC AUC,0.44693464430306534
+Brier Score,0.25424173830832786
+Majority-Class Baseline Accuracy,0.5449101796407185
+Historical-Rate Baseline Brier Score,0.24850144749531897

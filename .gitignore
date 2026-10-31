@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# pytest
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/tempCodeRunnerFile.ipynb
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Editor settings
+.vscode/
+
+# Operating system metadata
+.AppleDouble
+.LSOverride
+
+# Python coverage
+.coverage
+htmlcov/
+
+# Locally stored market data
+data/*.csv
+
+# Superseded report
+AI_Quant_Research_Lab_Final_Report.pdf

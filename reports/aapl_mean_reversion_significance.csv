@@ -1,0 +1,2 @@
+Test_Start,Test_End,Observations,Selected_Window,Selected_Threshold,Transaction_Cost,Mean_Strategy_Daily_Return,Mean_Buy_Hold_Daily_Return,Mean_Daily_Excess_Return,CI_95_Lower,CI_95_Upper,T_Statistic,P_Value
+2024-01-02,2025-12-31,502,20,-0.05,0.001,0.00021053114055632696,0.000859849534996825,-0.000649318394440498,-0.0019468644481143355,0.0006482276592333396,-0.980823801590694,0.32715303271985746

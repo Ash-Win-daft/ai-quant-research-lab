@@ -1,0 +1,11 @@
+Series,Test,Days_Removed,Total_Return,Return_Change,Observations_Remaining
+Mean Reversion Strategy,Baseline,0,0.08724500404907798,0.0,502
+Mean Reversion Strategy,Remove top 1 days,1,-0.05726544856898219,-0.14451045261806017,501
+Mean Reversion Strategy,Remove top 3 days,3,-0.12303898263082047,-0.21028398667989845,499
+Mean Reversion Strategy,Remove top 5 days,5,-0.170213080010154,-0.257458084059232,497
+Mean Reversion Strategy,Remove top 10 days,10,-0.25104010349231864,-0.3382851075413966,492
+Buy and Hold,Baseline,0,0.42537492372051977,0.0,502
+Buy and Hold,Remove top 1 days,1,0.23592215584375187,-0.1894527678767679,501
+Buy and Hold,Remove top 3 days,3,0.083778448387273,-0.3415964753332468,499
+Buy and Hold,Remove top 5 days,5,-0.026926353414322812,-0.4523012771348426,497
+Buy and Hold,Remove top 10 days,10,-0.20690125528833403,-0.6322761790088538,492
