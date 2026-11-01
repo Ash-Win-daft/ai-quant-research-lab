@@ -1,3 +1,37 @@
+## System Architecture
+
+```mermaid
+flowchart TD
+    A["Historical AAPL Market Data<br/>Daily OHLCV"] --> B["Data Validation<br/>engine/data.py"]
+    B --> C["Research Experiments"]
+
+    C --> D["Moving Average Strategy"]
+    C --> E["Mean Reversion Strategy"]
+    C --> F["Machine Learning Models"]
+    C --> G["Walk-Forward Validation"]
+
+    D --> H["Backtesting Engine"]
+    E --> H
+    F --> H
+    G --> H
+
+    H --> I["Performance Metrics<br/>Transaction Costs"]
+    I --> J["Statistical Evaluation<br/>HAC Significance"]
+    J --> K["Robustness & Falsification Tests"]
+
+    K --> L["Experiment Registry"]
+    L --> M["Research Results<br/>CSV Files"]
+
+    M --> N["Unified Research Pipeline"]
+    N --> O["Registry Summary"]
+    N --> P["Consolidated Report"]
+    N --> Q["Comprehensive Report"]
+    Q --> R["Final PDF Report"]
+
+    S["Jupyter Notebooks"] -.-> C
+    T["Automated Tests<br/>pytest"] -.-> H
+    T -.-> K
+```
 # AI Quant Research Lab
 
 **A quantitative research project focused on testing, evaluating, and attempting to falsify systematic trading strategies.**
