@@ -65,6 +65,23 @@ The strategy failed to demonstrate useful predictive performance and substantial
 
 These results led to rejection of the tested ML approach. They illustrate the importance of out-of-sample validation and realistic performance comparisons.
 
+### Mean-Reversion Strategies — Out-of-Sample Performance
+
+The mean-reversion strategy was evaluated on AAPL out-of-sample data from 2024–2025 using two execution conventions: close-to-close and open-to-open returns.
+
+![AAPL Mean-Reversion Execution Comparison](reports/mean_reversion_execution_comparison.png)
+
+**Key findings:**
+
+| Execution Method | Strategy Return | Buy-and-Hold Return |
+|---|---:|---:|
+| Close execution | 8.72% | 42.54% |
+| Open execution | 11.50% | 47.28% |
+
+Both execution variants underperformed their respective buy-and-hold benchmarks. Neither strategy demonstrated statistically significant mean daily excess returns under the HAC-based statistical test (close execution: p = 0.3546; open execution: p = 0.3404).
+
+The close-execution and open-execution results use different return intervals and should be interpreted separately. Both tested variants were rejected.
+
 ## Research Objectives
 
 - Develop and evaluate systematic trading strategies.
