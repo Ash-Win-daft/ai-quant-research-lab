@@ -1,3 +1,16 @@
+
+# AI Quant Research Lab
+
+**A quantitative research project focused on testing, evaluating, and attempting to falsify systematic trading strategies.**
+
+## Overview
+
+The AI Quant Research Lab is a Python-based quantitative research project designed to investigate whether systematic trading strategies demonstrate a measurable edge over a benchmark after accounting for execution timing, transaction costs, risk, and out-of-sample performance.
+
+Rather than assuming a strategy works because it performs well historically, the project emphasizes disciplined experimentation, statistical evaluation, robustness testing, and rejection of unsupported trading hypotheses.
+
+The central research principle is simple: **a strategy must provide evidence of an edge, not merely produce an attractive historical backtest.**
+
 ## System Architecture
 
 ```mermaid
@@ -32,17 +45,25 @@ flowchart TD
     T["Automated Tests<br/>pytest"] -.-> H
     T -.-> K
 ```
-# AI Quant Research Lab
 
-**A quantitative research project focused on testing, evaluating, and attempting to falsify systematic trading strategies.**
+## Selected Research Results
 
-## Overview
+### Machine Learning Strategy — Out-of-Sample Performance
 
-The AI Quant Research Lab is a Python-based quantitative research project designed to investigate whether systematic trading strategies demonstrate a measurable edge over a benchmark after accounting for execution timing, transaction costs, risk, and out-of-sample performance.
+The logistic regression model was evaluated on out-of-sample AAPL daily data from 2024–2025.
 
-Rather than assuming a strategy works because it performs well historically, the project emphasizes disciplined experimentation, statistical evaluation, robustness testing, and rejection of unsupported trading hypotheses.
+The strategy failed to demonstrate useful predictive performance and substantially underperformed the buy-and-hold benchmark after assumed transaction costs.
 
-The central research principle is simple: **a strategy must provide evidence of an edge, not merely produce an attractive historical backtest.**
+![AAPL ML Strategy Out-of-Sample Performance](reports/ml_strategy_performance.png)
+
+**Key findings:**
+- ROC AUC: 0.4661
+- ML strategy total return: -0.82%
+- Buy-and-hold total return: 47.83%
+- ML strategy Sharpe ratio: 0.099
+- Buy-and-hold Sharpe ratio: 0.843
+
+These results led to rejection of the tested ML approach. They illustrate the importance of out-of-sample validation and realistic performance comparisons.
 
 ## Research Objectives
 
