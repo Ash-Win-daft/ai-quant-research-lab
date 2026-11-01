@@ -2,8 +2,8 @@
 # AI Quant Research Lab
 ## Comprehensive Research Report
 
-**Research asset:** Apple Inc. (AAPL)  
-**Research period:** 2021–2025  
+**Research assets:** AAPL and a selected universe of 10 US equities
+**Research period:** 2021–2025, with primary out-of-sample evaluation during 2024–2025
 **Report type:** Historical quantitative research and strategy evaluation
 
 ---
@@ -14,12 +14,29 @@ This project investigates whether systematic trading strategies and
 machine-learning models can identify repeatable opportunities in
 historical equity-market data.
 
-The research emphasizes out-of-sample evaluation, transaction costs,
-statistical testing, parameter sensitivity and explicit rejection
-of strategies that fail to demonstrate convincing evidence.
+The research began with single-stock experiments on Apple Inc. (AAPL)
+and subsequently expanded to a selected ten-stock US equity universe.
 
-The experiment registry currently contains **5 experiments**,
-of which **5 are rejected**.
+The multi-stock universe includes technology, consumer, financial,
+energy and healthcare companies. The portfolio experiment uses
+equal-weighted daily rebalancing.
+
+The research emphasizes out-of-sample evaluation, transaction costs,
+execution timing, statistical testing, parameter sensitivity and
+explicit rejection of strategies that fail to demonstrate convincing
+evidence.
+
+The experiment registry currently contains **6 experiments**,
+of which **6 are rejected**.
+
+The multi-stock mean-reversion experiment evaluated
+**10 stocks** over the 2024–2025 out-of-sample period.
+None of the ten individual stocks outperformed their respective
+benchmarks on total return.
+
+The equal-weighted portfolio also underperformed its benchmark.
+Its mean daily excess return was significantly negative under
+HAC inference, with a p-value of approximately 0.0086.
 
 The findings do not establish a reliable benchmark-beating trading edge.
 Instead, the experiments demonstrate the importance of realistic
@@ -285,7 +302,7 @@ feature-generation and execution pipeline.
 
 
 
-## 8. Strategy Dependency and Market-Regime Diagnostics
+## 8. Strategy Diagnostics and Multi-Stock Research
 
 ### Earlier moving-average best-day dependency
 
@@ -364,29 +381,206 @@ explanations for strategy performance.
 | 2025-04-11 | 4.06%              |        1 |          1 | 0.00%                  | 4.06%            |            0.9964 |            1.0523 |
 | 2025-04-16 | -3.89%             |        1 |          0 | 0.00%                  | -0.00%           |            1.0174 |            1.0317 |
 
+### Multi-Stock Mean-Reversion Research
+
+The research universe was expanded from AAPL to ten selected US
+equities:
+
+AAPL, MSFT, NVDA, GOOGL, AMZN, WMT, JPM, GS, XOM and JNJ.
+
+All ten datasets passed market-data validation and had aligned
+trading dates. The common dataset contained 1,261 observations
+per stock, covering 2021-01-04 through 2026-01-09.
+
+The mean-reversion strategy used the 20-session rolling window
+and -5% entry threshold selected using AAPL training data
+from 2021–2023. These parameters were held fixed across the
+ten-stock evaluation. The out-of-sample period was 2024–2025.
+
+The use of AAPL-selected parameters across other stocks is a
+deliberate fixed-parameter transfer experiment. It is not
+independent parameter optimization for each stock.
+
+#### Individual-stock performance
+
+| ticker   | company             | sector     |   window |   threshold | transaction_cost   | test_start   | test_end   |   observations | Strategy_Total Return   | Strategy_CAGR   | Strategy_Annualized Volatility   |   Strategy_Sharpe Ratio (rf=0) | Strategy_Maximum Drawdown   | BuyHold_Total Return   | BuyHold_CAGR   | BuyHold_Annualized Volatility   |   BuyHold_Sharpe Ratio (rf=0) | BuyHold_Maximum Drawdown   | Excess_Total_Return   | Beats_Buy_Hold   |
+|:---------|:--------------------|:-----------|---------:|------------:|:-------------------|:-------------|:-----------|---------------:|:------------------------|:----------------|:---------------------------------|-------------------------------:|:----------------------------|:-----------------------|:---------------|:--------------------------------|------------------------------:|:---------------------------|:----------------------|:-----------------|
+| AAPL     | Apple               | Technology |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 11.50%                  | 5.63%           | 17.21%                           |                         0.4018 | -13.44%                     | 47.28%                 | 21.50%         | 29.90%                          |                        0.7998 | -33.33%                    | -35.78%               | False            |
+| MSFT     | Microsoft           | Technology |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 8.39%                   | 4.13%           | 10.12%                           |                         0.45   | -8.46%                      | 32.43%                 | 15.18%         | 24.31%                          |                        0.7019 | -24.43%                    | -24.05%               | False            |
+| NVDA     | NVIDIA              | Technology |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 119.12%                 | 48.38%          | 28.40%                           |                         1.528  | -12.94%                     | 285.18%                | 97.05%         | 53.50%                          |                        1.5378 | -42.84%                    | -166.06%              | False            |
+| GOOGL    | Alphabet            | Technology |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 12.98%                  | 6.33%           | 11.58%                           |                         0.587  | -9.43%                      | 127.51%                | 51.21%         | 32.85%                          |                        1.4213 | -30.32%                    | -114.53%              | False            |
+| AMZN     | Amazon              | Consumer   |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 20.31%                  | 9.75%           | 17.89%                           |                         0.6066 | -14.48%                     | 53.70%                 | 24.13%         | 33.83%                          |                        0.8075 | -32.22%                    | -33.39%               | False            |
+| WMT      | Walmart             | Consumer   |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | -0.92%                  | -0.46%          | 4.78%                            |                        -0.073  | -5.92%                      | 117.78%                | 47.92%         | 21.86%                          |                        1.9004 | -23.59%                    | -118.69%              | False            |
+| JPM      | JPMorgan Chase      | Financials |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 10.03%                  | 4.92%           | 10.47%                           |                         0.5098 | -9.71%                      | 100.55%                | 41.91%         | 24.09%                          |                        1.5741 | -25.71%                    | -90.53%               | False            |
+| GS       | Goldman Sachs       | Financials |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 8.80%                   | 4.33%           | 14.81%                           |                         0.3592 | -13.16%                     | 141.25%                | 55.73%         | 29.30%                          |                        1.659  | -32.88%                    | -132.45%              | False            |
+| XOM      | Exxon Mobil         | Energy     |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 2.53%                   | 1.26%           | 8.01%                            |                         0.1965 | -5.77%                      | 28.73%                 | 13.54%         | 23.06%                          |                        0.6669 | -19.30%                    | -26.20%               | False            |
+| JNJ      | Johnson and Johnson | Healthcare |       20 |       -0.05 | 0.10%              | 2024-01-02   | 2025-12-30 |            501 | 4.45%                   | 2.21%           | 7.22%                            |                         0.3399 | -7.42%                      | 40.19%                 | 18.52%         | 17.88%                          |                        1.0401 | -15.40%                    | -35.74%               | False            |
+
+All ten stocks underperformed their respective benchmarks
+on total return at the reference transaction cost of 0.10%.
+
+#### Cross-sectional results
+
+| Metric                        | Mean    | Median   | Standard Deviation   | Minimum   | 25th Percentile   | 75th Percentile   | Maximum   |
+|:------------------------------|:--------|:---------|:---------------------|:----------|:------------------|:------------------|:----------|
+| Strategy Total Return         | 19.72%  | 9.41%    | 35.42%               | -0.92%    | 5.43%             | 12.61%            | 119.12%   |
+| Buy-and-Hold Total Return     | 97.46%  | 77.12%   | 78.28%               | 28.73%    | 41.96%            | 125.08%           | 285.18%   |
+| Excess Total Return           | -77.74% | -63.15%  | 52.72%               | -166.06%  | -117.65%          | -33.97%           | -24.05%   |
+| Strategy Sharpe Ratio         | 0.4906  | 0.4259   | 0.4154               | -0.0730   | 0.3447            | 0.5677            | 1.5280    |
+| Buy-and-Hold Sharpe Ratio     | 1.2109  | 1.2307   | 0.4565               | 0.6669    | 0.8017            | 1.5650            | 1.9004    |
+| Strategy Maximum Drawdown     | -10.07% | -9.57%   | 3.24%                | -14.48%   | -13.11%           | -7.68%            | -5.77%    |
+| Buy-and-Hold Maximum Drawdown | -28.00% | -28.02%  | 7.94%                | -42.84%   | -32.71%           | -23.80%           | -15.40%   |
+
+#### Sector-level descriptive results
+
+| sector     |   Stocks | Mean_Strategy_Return   | Median_Strategy_Return   | Mean_BuyHold_Return   | Median_BuyHold_Return   | Mean_Excess_Return   | Median_Excess_Return   |   Mean_Strategy_Sharpe |   Mean_BuyHold_Sharpe |   Stocks_Beating_BuyHold |   Percent_Beating_BuyHold |
+|:-----------|---------:|:-----------------------|:-------------------------|:----------------------|:------------------------|:---------------------|:-----------------------|-----------------------:|----------------------:|-------------------------:|--------------------------:|
+| Consumer   |        2 | 9.70%                  | 9.70%                    | 85.74%                | 85.74%                  | -76.04%              | -76.04%                |                 0.2668 |                1.3539 |                        0 |                         0 |
+| Energy     |        1 | 2.53%                  | 2.53%                    | 28.73%                | 28.73%                  | -26.20%              | -26.20%                |                 0.1965 |                0.6669 |                        0 |                         0 |
+| Financials |        2 | 9.41%                  | 9.41%                    | 120.90%               | 120.90%                 | -111.49%             | -111.49%               |                 0.4345 |                1.6165 |                        0 |                         0 |
+| Healthcare |        1 | 4.45%                  | 4.45%                    | 40.19%                | 40.19%                  | -35.74%              | -35.74%                |                 0.3399 |                1.0401 |                        0 |                         0 |
+| Technology |        4 | 38.00%                 | 12.24%                   | 123.10%               | 87.40%                  | -85.10%              | -75.16%                |                 0.7417 |                1.1152 |                        0 |                         0 |
+
+Sector groups are small and unevenly represented. These
+descriptive results should not be interpreted as reliable
+sector-wide conclusions.
+
+#### Transaction-cost sensitivity
+
+The experiment was reconstructed at several transaction-cost
+assumptions. The 0.10% reconstruction was checked against the
+original strategy results.
+
+| transaction_cost   |   stocks | Mean_Strategy_Return   | Median_Strategy_Return   | Mean_Excess_Return   | Median_Excess_Return   |   Mean_Strategy_Sharpe |   Median_Strategy_Sharpe | Mean_Strategy_Max_Drawdown   |   Stocks_Beating_BuyHold |   Percent_Beating_BuyHold |
+|:-------------------|---------:|:-----------------------|:-------------------------|:---------------------|:-----------------------|-----------------------:|-------------------------:|:-----------------------------|-------------------------:|--------------------------:|
+| 0.00%              |       10 | 22.02%                 | 10.95%                   | -75.44%              | -62.06%                |                 0.5557 |                   0.4898 | -9.78%                       |                        0 |                         0 |
+| 0.05%              |       10 | 20.86%                 | 10.18%                   | -76.60%              | -62.59%                |                 0.5232 |                   0.4579 | -9.93%                       |                        0 |                         0 |
+| 0.10%              |       10 | 19.72%                 | 9.41%                    | -77.74%              | -63.15%                |                 0.4906 |                   0.4259 | -10.07%                      |                        0 |                         0 |
+| 0.25%              |       10 | 16.37%                 | 7.15%                    | -81.08%              | -65.79%                |                 0.3926 |                   0.3297 | -10.64%                      |                        0 |                         0 |
+| 0.50%              |       10 | 11.06%                 | 2.27%                    | -86.40%              | -70.04%                |                 0.2297 |                   0.1539 | -11.74%                      |                        0 |                         0 |
+
+Even with zero transaction costs, none of the ten stocks
+outperformed its benchmark. Transaction costs worsened the
+results but did not explain the underlying underperformance.
+
+#### Individual-stock HAC significance tests
+
+The individual-stock tests evaluate whether each stock's
+mean daily strategy excess return differs from zero.
+
+Holm correction is applied across the ten individual tests
+to control the family-wise error rate.
+
+| ticker   |   Observations | Mean_Daily_Excess_Return   | Annualized_Mean_Excess_Return   | HAC_Standard_Error   |   HAC_T_Statistic |   HAC_P_Value | CI_95_Lower   | CI_95_Upper   |   Holm_Adjusted_P_Value | Significant_After_Holm   | Raw_Conclusion   | Holm_Conclusion                       |
+|:---------|---------------:|:---------------------------|:--------------------------------|:---------------------|------------------:|--------------:|:--------------|:--------------|------------------------:|:-------------------------|:-----------------|:--------------------------------------|
+| WMT      |            501 | -0.17%                     | -41.89%                         | 0.06%                |           -2.8778 |        0.004  | -0.28%        | -0.05%        |                  0.0401 | True                     | Significant      | Significant after Holm correction     |
+| GS       |            501 | -0.17%                     | -43.28%                         | 0.07%                |           -2.349  |        0.0188 | -0.32%        | -0.03%        |                  0.1694 | False                    | Significant      | Not significant after Holm correction |
+| JPM      |            501 | -0.13%                     | -32.58%                         | 0.06%                |           -2.0373 |        0.0416 | -0.25%        | -0.00%        |                  0.3329 | False                    | Significant      | Not significant after Holm correction |
+| GOOGL    |            501 | -0.16%                     | -39.89%                         | 0.08%                |           -1.9877 |        0.0469 | -0.31%        | -0.00%        |                  0.3329 | False                    | Significant      | Not significant after Holm correction |
+| JNJ      |            501 | -0.06%                     | -16.14%                         | 0.05%                |           -1.3655 |        0.1721 | -0.16%        | 0.03%         |                  1      | False                    | Not significant  | Not significant after Holm correction |
+| NVDA     |            501 | -0.15%                     | -38.88%                         | 0.13%                |           -1.183  |        0.2368 | -0.41%        | 0.10%         |                  1      | False                    | Not significant  | Not significant after Holm correction |
+| AAPL     |            501 | -0.07%                     | -17.00%                         | 0.07%                |           -0.9542 |        0.34   | -0.21%        | 0.07%         |                  1      | False                    | Not significant  | Not significant after Holm correction |
+| XOM      |            501 | -0.05%                     | -13.80%                         | 0.06%                |           -0.8953 |        0.3706 | -0.17%        | 0.07%         |                  1      | False                    | Not significant  | Not significant after Holm correction |
+| MSFT     |            501 | -0.05%                     | -12.51%                         | 0.06%                |           -0.8554 |        0.3924 | -0.16%        | 0.06%         |                  1      | False                    | Not significant  | Not significant after Holm correction |
+| AMZN     |            501 | -0.07%                     | -16.47%                         | 0.08%                |           -0.7801 |        0.4353 | -0.23%        | 0.10%         |                  1      | False                    | Not significant  | Not significant after Holm correction |
+
+Four stocks had unadjusted p-values below 0.05. After Holm
+correction, only WMT remained significant at the 5% level.
+Its significant result represents negative mean daily excess
+return, not evidence of a profitable strategy.
+
+#### Equal-weighted portfolio HAC test
+
+The portfolio is constructed by averaging the ten constituent
+strategy returns each day. The benchmark is constructed by
+averaging the ten constituent asset returns each day. Both
+are therefore equal-weighted and daily rebalanced.
+
+|   Observations | Mean_Daily_Excess_Return   | Annualized_Mean_Excess_Return   | HAC_Standard_Error   |   HAC_T_Statistic |   HAC_P_Value | CI_95_Lower   | CI_95_Upper   |   Stocks | Portfolio_Construction          | Conclusion   |
+|---------------:|:---------------------------|:--------------------------------|:---------------------|------------------:|--------------:|:--------------|:--------------|---------:|:--------------------------------|:-------------|
+|            501 | -0.11%                     | -27.24%                         | 0.04%                |           -2.6259 |        0.0086 | -0.19%        | -0.03%        |       10 | Equal-weighted daily rebalanced | Significant  |
+
+The portfolio contained 501 daily observations. Its mean
+daily excess return was approximately -0.1081%, with a HAC
+p-value of 0.008642. The 95% confidence interval was entirely
+negative.
+
+#### HAC lag sensitivity
+
+|   HAC_Max_Lags |   Observations | Mean_Daily_Excess_Return   | Annualized_Mean_Excess_Return   | HAC_Standard_Error   |   HAC_T_Statistic |   HAC_P_Value | CI_95_Lower   | CI_95_Upper   | Significant_At_5_Percent   |
+|---------------:|---------------:|:---------------------------|:--------------------------------|:---------------------|------------------:|--------------:|:--------------|:--------------|:---------------------------|
+|              1 |            501 | -0.11%                     | -27.24%                         | 0.04%                |           -2.6981 |        0.007  | -0.19%        | -0.03%        | True                       |
+|              5 |            501 | -0.11%                     | -27.24%                         | 0.04%                |           -2.6259 |        0.0086 | -0.19%        | -0.03%        | True                       |
+|             10 |            501 | -0.11%                     | -27.24%                         | 0.04%                |           -2.541  |        0.0111 | -0.19%        | -0.02%        | True                       |
+|             20 |            501 | -0.11%                     | -27.24%                         | 0.04%                |           -2.5138 |        0.0119 | -0.19%        | -0.02%        | True                       |
+
+The negative portfolio excess-return result remained
+statistically significant at the 5% level across HAC
+lag specifications of 1, 5, 10 and 20.
+
+#### Equal-weighted portfolio performance
+
+The equal-weighted portfolio's compounded results were:
+
+| Metric | Strategy | Equal-weighted benchmark |
+|---|---:|---:|
+| Total return | 17.69% | 97.34% |
+| Sharpe ratio | 0.8649 | 1.9342 |
+| Maximum drawdown | -5.39% | -22.45% |
+
+The strategy experienced a smaller maximum drawdown, but
+substantially underperformed the benchmark on total return
+and Sharpe ratio.
+
+**Decision: REJECT.**
+
+#### Interpretation
+
+The multi-stock experiment provides broader evidence than
+the original AAPL-only research, but it does not establish
+a profitable or benchmark-beating mean-reversion strategy.
+
+The ten-stock universe is selected rather than a point-in-time
+historical universe. The findings are conditional on the
+selected assets, fixed AAPL-derived parameters, transaction-cost
+assumptions and 2024–2025 evaluation period.
+
+
 
 ## 9. Experiment Registry
 
 The registry records formal strategy experiments and their decisions.
 
-| Experiment_ID                      | Strategy                         | Evaluation_Period   | Strategy_Total_Return   | Buy_Hold_Total_Return   |   Strategy_Sharpe |   Buy_Hold_Sharpe | HAC_P_Value   | Decision   |
-|:-----------------------------------|:---------------------------------|:--------------------|:------------------------|:------------------------|------------------:|------------------:|:--------------|:-----------|
-| AAPL_MR_OOS_2024_2025              | Mean Reversion                   | 2024-2025           | 8.72%                   | 42.54%                  |            0.3495 |            0.7742 | 0.3546        | REJECT     |
-| AAPL_SMA_BASELINE                  | Moving Average                   | 2021-2025           | 33.15%                  | 115.81%                 |            0.4113 |            0.6932 | Not available | REJECT     |
-| AAPL_MR_OPEN_OOS_2024_2025         | Mean Reversion (Open Execution)  | 2024-2025           | 11.50%                  | 47.28%                  |            0.4018 |            0.7998 | 0.3404        | REJECT     |
-| AAPL_STATIC_ML_OOS_2024_2025       | Static Logistic Regression       | 2024-2025           | 3.24%                   | 47.83%                  |            0.1838 |            0.8429 | Not available | REJECT     |
-| AAPL_WALK_FORWARD_ML_OOS_2024_2025 | Walk-Forward Logistic Regression | 2024-2025           | 13.00%                  | 47.83%                  |            0.3676 |            0.8429 | Not available | REJECT     |
+| Experiment_ID                        | Strategy                         | Evaluation_Period   | Strategy_Total_Return   | Buy_Hold_Total_Return   |   Strategy_Sharpe |   Buy_Hold_Sharpe | HAC_P_Value   | Decision   |
+|:-------------------------------------|:---------------------------------|:--------------------|:------------------------|:------------------------|------------------:|------------------:|:--------------|:-----------|
+| AAPL_MR_OOS_2024_2025                | Mean Reversion                   | 2024-2025           | 8.72%                   | 42.54%                  |            0.3495 |            0.7742 | 0.3546        | REJECT     |
+| AAPL_SMA_BASELINE                    | Moving Average                   | 2021-2025           | 33.15%                  | 115.81%                 |            0.4113 |            0.6932 | Not available | REJECT     |
+| AAPL_MR_OPEN_OOS_2024_2025           | Mean Reversion (Open Execution)  | 2024-2025           | 11.50%                  | 47.28%                  |            0.4018 |            0.7998 | 0.3404        | REJECT     |
+| US10_MR_OPEN_PORTFOLIO_OOS_2024_2025 | Mean Reversion (Open Execution)  | 2024-2025           | 17.69%                  | 97.34%                  |            0.8649 |            1.9342 | 0.0086        | REJECT     |
+| AAPL_STATIC_ML_OOS_2024_2025         | Static Logistic Regression       | 2024-2025           | 3.24%                   | 47.83%                  |            0.1838 |            0.8429 | Not available | REJECT     |
+| AAPL_WALK_FORWARD_ML_OOS_2024_2025   | Walk-Forward Logistic Regression | 2024-2025           | 13.00%                  | 47.83%                  |            0.3676 |            0.8429 | Not available | REJECT     |
 
-The registry currently contains 5 experiments,
-of which 5 are rejected.
+The registry currently contains 6 experiments,
+of which 6 are rejected.
+
+The registry includes five AAPL experiments and one
+ten-stock equal-weighted portfolio experiment.
 
 The moving-average registry entry does not have a verified
 HAC significance result. Its unavailable p-value is not
 interpreted as evidence of statistical significance.
 
-The close-execution and open-execution mean-reversion entries
-have recorded HAC p-values, neither of which indicates
-statistical significance at the 5% level.
+The close-execution and open-execution AAPL mean-reversion
+experiments did not demonstrate statistically significant
+mean daily excess returns at the 5% level.
+
+The ten-stock portfolio experiment recorded a HAC p-value
+of approximately 0.0086, indicating significantly negative
+mean daily excess returns at the 5% level. This result
+remained significant across the tested HAC lag specifications.
+
+The portfolio's statistical result is conditional on the
+selected ten-stock universe and 2024–2025 evaluation period.
 
 
 
@@ -394,29 +588,65 @@ statistical significance at the 5% level.
 
 The research has several important limitations:
 
-1. The primary experiments use a single equity asset, AAPL.
-2. Historical performance does not guarantee future performance.
-3. Transaction-cost assumptions simplify real-world execution.
-4. Market impact, bid-ask spreads, liquidity constraints and
+1. The initial experiments use AAPL. The later multi-stock
+   experiment expands the universe to ten selected US equities,
+   but this is not a broad-market sample.
+
+2. The ten-stock universe is selected using a present-day
+   configuration rather than a point-in-time historical
+   constituent universe. Survivorship and selection bias
+   may therefore affect the findings.
+
+3. The universe is not sector-balanced. Technology accounts
+   for four of the ten stocks, while several other sectors
+   have only one or two representatives. Sector-level
+   statistics are descriptive, not generalizable.
+
+4. Multi-stock mean-reversion parameters were selected using
+   AAPL training data and transferred unchanged to the other
+   stocks. This does not establish that the parameters are
+   optimal for each constituent.
+
+5. The portfolio benchmark is an equal-weighted, daily
+   rebalanced basket. It should not be interpreted as a
+   conventional buy-and-hold portfolio with fixed share
+   quantities.
+
+6. Transaction-cost assumptions simplify real-world execution.
+   Market impact, bid-ask spreads, liquidity constraints and
    partial fills are not fully modeled.
-5. Some experiments use different execution conventions and
-   evaluation periods, so their returns are not directly comparable.
-6. Parameter sensitivity does not eliminate data-snooping risk.
-7. Machine-learning features are primarily derived from historical
-   price data.
-8. The experiment registry contains a moving-average record without
-   a verified HAC significance result.
-9. Some older diagnostic outputs were generated independently
-   in notebooks and have not been fully integrated into the
-   formal experiment registry.
-10. The framework is a research prototype, not a production
+
+7. Some experiments use different execution conventions and
+   evaluation periods, so their returns are not directly
+   comparable.
+
+8. Parameter sensitivity and repeated experimentation do not
+   eliminate data-snooping risk or multiple-testing concerns.
+
+9. Machine-learning features are primarily derived from
+   historical price data. Further independent validation
+   is required.
+
+10. The HAC tests evaluate mean daily arithmetic excess returns.
+    They do not directly test whether compounded total returns
+    or CAGR are statistically different.
+
+11. The annualized mean excess return reported in the HAC
+    analysis is the arithmetic daily mean multiplied by 252.
+    It is not a compounded annual return.
+
+12. The framework is a research prototype, not a production
     trading system.
 
 ## 11. Future Research
 
 Potential extensions include:
 
+- Expanding to a broader, point-in-time US equity universe.
+- Controlling survivorship and selection bias.
 - Testing across multiple assets and market regimes.
+- Evaluating parameters independently using nested or
+  properly separated training and validation procedures.
 - Adding point-in-time fundamental and alternative data.
 - Modeling spreads, slippage and market impact.
 - Applying purged and embargoed cross-validation where appropriate.
@@ -429,16 +659,21 @@ Potential extensions include:
 ## 12. Final Conclusion
 
 The experiments did not identify a strategy that convincingly
-outperformed buy-and-hold after the tested transaction costs and
-evaluation procedures.
+outperformed its benchmark after the tested transaction costs
+and evaluation procedures.
 
-The machine-learning experiments also failed to demonstrate
+The single-stock and multi-stock mean-reversion experiments
+underperformed their respective benchmarks. The equal-weighted
+ten-stock portfolio also produced significantly negative mean
+daily excess returns under the tested HAC specifications.
+
+The machine-learning experiments failed to demonstrate
 reliable predictive superiority over simple baselines.
 
 The main contribution of this project is its research framework:
-strategies are tested under explicit assumptions, evaluated against
-benchmarks, examined for statistical support and rejected when
-the evidence is insufficient.
+strategies are tested under explicit assumptions, evaluated
+against benchmarks, examined for statistical support and
+rejected when the evidence is insufficient.
 
 The results should be interpreted as historical research findings,
 not investment advice or evidence of a deployable trading edge.

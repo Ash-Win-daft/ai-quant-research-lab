@@ -36,6 +36,14 @@ INPUT_FILES = {
     "best_day_dependency": "best_day_dependency_comparison.csv",
     "extreme_days": "extreme_day_analysis.csv",
     "april_regime": "april_2025_regime_analysis.csv",
+    "multi_stock_summary": "multi_stock_mean_reversion_open_summary.csv",
+    "multi_stock_cross_section": "multi_stock_cross_sectional_statistics.csv",
+    "multi_stock_sector": "multi_stock_sector_statistics.csv",
+    "multi_stock_costs": "multi_stock_cost_sensitivity_summary.csv",
+    "multi_stock_hac": "multi_stock_hac_significance.csv",
+    "multi_stock_portfolio_hac": "multi_stock_portfolio_hac_significance.csv",
+    "multi_stock_hac_lags": "multi_stock_hac_lag_sensitivity.csv",
+    "multi_stock_validation": "multi_stock_validation_summary.csv"
 }
 
 
@@ -276,6 +284,7 @@ def registry_value(experiment_id, column):
 # REPORT SECTIONS
 # ============================================================
 
+
 def build_executive_summary(data):
     registry = data["registry"]
 
@@ -284,12 +293,16 @@ def build_executive_summary(data):
         (registry["Decision"] == "REJECT").sum()
     )
 
+    multi_stock_count = 0
+    if "multi_stock_summary" in data:
+        multi_stock_count = len(data["multi_stock_summary"])
+
     return f"""
 # AI Quant Research Lab
 ## Comprehensive Research Report
 
-**Research asset:** Apple Inc. (AAPL)  
-**Research period:** 2021–2025  
+**Research assets:** AAPL and a selected universe of 10 US equities
+**Research period:** 2021–2025, with primary out-of-sample evaluation during 2024–2025
 **Report type:** Historical quantitative research and strategy evaluation
 
 ---
@@ -300,18 +313,36 @@ This project investigates whether systematic trading strategies and
 machine-learning models can identify repeatable opportunities in
 historical equity-market data.
 
+The research began with single-stock experiments on Apple Inc. (AAPL)
+and subsequently expanded to a selected ten-stock US equity universe.
+
+The multi-stock universe includes technology, consumer, financial,
+energy and healthcare companies. The portfolio experiment uses
+equal-weighted daily rebalancing.
+
 The research emphasizes out-of-sample evaluation, transaction costs,
-statistical testing, parameter sensitivity and explicit rejection
-of strategies that fail to demonstrate convincing evidence.
+execution timing, statistical testing, parameter sensitivity and
+explicit rejection of strategies that fail to demonstrate convincing
+evidence.
 
 The experiment registry currently contains **{total} experiments**,
 of which **{rejected} are rejected**.
+
+The multi-stock mean-reversion experiment evaluated
+**{multi_stock_count} stocks** over the 2024–2025 out-of-sample period.
+None of the ten individual stocks outperformed their respective
+benchmarks on total return.
+
+The equal-weighted portfolio also underperformed its benchmark.
+Its mean daily excess return was significantly negative under
+HAC inference, with a p-value of approximately 0.0086.
 
 The findings do not establish a reliable benchmark-beating trading edge.
 Instead, the experiments demonstrate the importance of realistic
 execution assumptions, statistical validation and disciplined
 research methodology.
 """
+
 
 
 def build_research_methodology():
@@ -670,9 +701,186 @@ def build_april_regime_table(data):
     return comparison_table(selected)
 
 
+def build_multi_stock_section(data):
+    text = """
+### Multi-Stock Mean-Reversion Research
+
+The research universe was expanded from AAPL to ten selected US
+equities:
+
+AAPL, MSFT, NVDA, GOOGL, AMZN, WMT, JPM, GS, XOM and JNJ.
+
+All ten datasets passed market-data validation and had aligned
+trading dates. The common dataset contained 1,261 observations
+per stock, covering 2021-01-04 through 2026-01-09.
+
+The mean-reversion strategy used the 20-session rolling window
+and -5% entry threshold selected using AAPL training data
+from 2021–2023. These parameters were held fixed across the
+ten-stock evaluation. The out-of-sample period was 2024–2025.
+
+The use of AAPL-selected parameters across other stocks is a
+deliberate fixed-parameter transfer experiment. It is not
+independent parameter optimization for each stock.
+
+#### Individual-stock performance
+
+"""
+
+    if "multi_stock_summary" in data:
+        text += comparison_table(
+            data["multi_stock_summary"]
+        ) + "\n"
+    else:
+        text += "Multi-stock performance summary unavailable.\n"
+
+    text += """
+All ten stocks underperformed their respective benchmarks
+on total return at the reference transaction cost of 0.10%.
+
+#### Cross-sectional results
+
+"""
+
+    if "multi_stock_cross_section" in data:
+        text += comparison_table(
+            data["multi_stock_cross_section"]
+        ) + "\n"
+    else:
+        text += "Cross-sectional statistics unavailable.\n"
+
+    text += """
+#### Sector-level descriptive results
+
+"""
+
+    if "multi_stock_sector" in data:
+        text += comparison_table(
+            data["multi_stock_sector"]
+        ) + "\n"
+    else:
+        text += "Sector statistics unavailable.\n"
+
+    text += """
+Sector groups are small and unevenly represented. These
+descriptive results should not be interpreted as reliable
+sector-wide conclusions.
+
+#### Transaction-cost sensitivity
+
+The experiment was reconstructed at several transaction-cost
+assumptions. The 0.10% reconstruction was checked against the
+original strategy results.
+
+"""
+
+    if "multi_stock_costs" in data:
+        text += comparison_table(
+            data["multi_stock_costs"]
+        ) + "\n"
+    else:
+        text += "Multi-stock cost-sensitivity results unavailable.\n"
+
+    text += """
+Even with zero transaction costs, none of the ten stocks
+outperformed its benchmark. Transaction costs worsened the
+results but did not explain the underlying underperformance.
+
+#### Individual-stock HAC significance tests
+
+The individual-stock tests evaluate whether each stock's
+mean daily strategy excess return differs from zero.
+
+Holm correction is applied across the ten individual tests
+to control the family-wise error rate.
+
+"""
+
+    if "multi_stock_hac" in data:
+        text += comparison_table(
+            data["multi_stock_hac"]
+        ) + "\n"
+    else:
+        text += "Individual-stock HAC results unavailable.\n"
+
+    text += """
+Four stocks had unadjusted p-values below 0.05. After Holm
+correction, only WMT remained significant at the 5% level.
+Its significant result represents negative mean daily excess
+return, not evidence of a profitable strategy.
+
+#### Equal-weighted portfolio HAC test
+
+The portfolio is constructed by averaging the ten constituent
+strategy returns each day. The benchmark is constructed by
+averaging the ten constituent asset returns each day. Both
+are therefore equal-weighted and daily rebalanced.
+
+"""
+
+    if "multi_stock_portfolio_hac" in data:
+        text += comparison_table(
+            data["multi_stock_portfolio_hac"]
+        ) + "\n"
+    else:
+        text += "Portfolio HAC results unavailable.\n"
+
+    text += """
+The portfolio contained 501 daily observations. Its mean
+daily excess return was approximately -0.1081%, with a HAC
+p-value of 0.008642. The 95% confidence interval was entirely
+negative.
+
+#### HAC lag sensitivity
+
+"""
+
+    if "multi_stock_hac_lags" in data:
+        text += comparison_table(
+            data["multi_stock_hac_lags"]
+        ) + "\n"
+    else:
+        text += "HAC lag-sensitivity results unavailable.\n"
+
+    text += """
+The negative portfolio excess-return result remained
+statistically significant at the 5% level across HAC
+lag specifications of 1, 5, 10 and 20.
+
+#### Equal-weighted portfolio performance
+
+The equal-weighted portfolio's compounded results were:
+
+| Metric | Strategy | Equal-weighted benchmark |
+|---|---:|---:|
+| Total return | 17.69% | 97.34% |
+| Sharpe ratio | 0.8649 | 1.9342 |
+| Maximum drawdown | -5.39% | -22.45% |
+
+The strategy experienced a smaller maximum drawdown, but
+substantially underperformed the benchmark on total return
+and Sharpe ratio.
+
+**Decision: REJECT.**
+
+#### Interpretation
+
+The multi-stock experiment provides broader evidence than
+the original AAPL-only research, but it does not establish
+a profitable or benchmark-beating mean-reversion strategy.
+
+The ten-stock universe is selected rather than a point-in-time
+historical universe. The findings are conditional on the
+selected assets, fixed AAPL-derived parameters, transaction-cost
+assumptions and 2024–2025 evaluation period.
+"""
+
+    return text
+
+
 def build_diagnostics_section(data):
     text = """
-## 8. Strategy Dependency and Market-Regime Diagnostics
+## 8. Strategy Diagnostics and Multi-Stock Research
 
 ### Earlier moving-average best-day dependency
 
@@ -731,7 +939,7 @@ explanations for strategy performance.
 """
 
     text += build_april_regime_table(data)
-
+    text += "\n" + build_multi_stock_section(data)
     return text
 
 
@@ -776,25 +984,37 @@ The registry records formal strategy experiments and their decisions.
         (registry["Decision"] == "REJECT").sum()
     )
 
+
     text += f"""
 The registry currently contains {total} experiments,
 of which {rejected} are rejected.
+
+The registry includes five AAPL experiments and one
+ten-stock equal-weighted portfolio experiment.
 
 The moving-average registry entry does not have a verified
 HAC significance result. Its unavailable p-value is not
 interpreted as evidence of statistical significance.
 
-The close-execution and open-execution mean-reversion entries
-have recorded HAC p-values, neither of which indicates
-statistical significance at the 5% level.
+The close-execution and open-execution AAPL mean-reversion
+experiments did not demonstrate statistically significant
+mean daily excess returns at the 5% level.
+
+The ten-stock portfolio experiment recorded a HAC p-value
+of approximately 0.0086, indicating significantly negative
+mean daily excess returns at the 5% level. This result
+remained significant across the tested HAC lag specifications.
+
+The portfolio's statistical result is conditional on the
+selected ten-stock universe and 2024–2025 evaluation period.
 """
 
     return text
 
-
 # ============================================================
 # LIMITATIONS, FUTURE RESEARCH AND CONCLUSION
 # ============================================================
+
 
 def build_limitations_section():
     return """
@@ -802,29 +1022,65 @@ def build_limitations_section():
 
 The research has several important limitations:
 
-1. The primary experiments use a single equity asset, AAPL.
-2. Historical performance does not guarantee future performance.
-3. Transaction-cost assumptions simplify real-world execution.
-4. Market impact, bid-ask spreads, liquidity constraints and
+1. The initial experiments use AAPL. The later multi-stock
+   experiment expands the universe to ten selected US equities,
+   but this is not a broad-market sample.
+
+2. The ten-stock universe is selected using a present-day
+   configuration rather than a point-in-time historical
+   constituent universe. Survivorship and selection bias
+   may therefore affect the findings.
+
+3. The universe is not sector-balanced. Technology accounts
+   for four of the ten stocks, while several other sectors
+   have only one or two representatives. Sector-level
+   statistics are descriptive, not generalizable.
+
+4. Multi-stock mean-reversion parameters were selected using
+   AAPL training data and transferred unchanged to the other
+   stocks. This does not establish that the parameters are
+   optimal for each constituent.
+
+5. The portfolio benchmark is an equal-weighted, daily
+   rebalanced basket. It should not be interpreted as a
+   conventional buy-and-hold portfolio with fixed share
+   quantities.
+
+6. Transaction-cost assumptions simplify real-world execution.
+   Market impact, bid-ask spreads, liquidity constraints and
    partial fills are not fully modeled.
-5. Some experiments use different execution conventions and
-   evaluation periods, so their returns are not directly comparable.
-6. Parameter sensitivity does not eliminate data-snooping risk.
-7. Machine-learning features are primarily derived from historical
-   price data.
-8. The experiment registry contains a moving-average record without
-   a verified HAC significance result.
-9. Some older diagnostic outputs were generated independently
-   in notebooks and have not been fully integrated into the
-   formal experiment registry.
-10. The framework is a research prototype, not a production
+
+7. Some experiments use different execution conventions and
+   evaluation periods, so their returns are not directly
+   comparable.
+
+8. Parameter sensitivity and repeated experimentation do not
+   eliminate data-snooping risk or multiple-testing concerns.
+
+9. Machine-learning features are primarily derived from
+   historical price data. Further independent validation
+   is required.
+
+10. The HAC tests evaluate mean daily arithmetic excess returns.
+    They do not directly test whether compounded total returns
+    or CAGR are statistically different.
+
+11. The annualized mean excess return reported in the HAC
+    analysis is the arithmetic daily mean multiplied by 252.
+    It is not a compounded annual return.
+
+12. The framework is a research prototype, not a production
     trading system.
 
 ## 11. Future Research
 
 Potential extensions include:
 
+- Expanding to a broader, point-in-time US equity universe.
+- Controlling survivorship and selection bias.
 - Testing across multiple assets and market regimes.
+- Evaluating parameters independently using nested or
+  properly separated training and validation procedures.
 - Adding point-in-time fundamental and alternative data.
 - Modeling spreads, slippage and market impact.
 - Applying purged and embargoed cross-validation where appropriate.
@@ -837,20 +1093,26 @@ Potential extensions include:
 ## 12. Final Conclusion
 
 The experiments did not identify a strategy that convincingly
-outperformed buy-and-hold after the tested transaction costs and
-evaluation procedures.
+outperformed its benchmark after the tested transaction costs
+and evaluation procedures.
 
-The machine-learning experiments also failed to demonstrate
+The single-stock and multi-stock mean-reversion experiments
+underperformed their respective benchmarks. The equal-weighted
+ten-stock portfolio also produced significantly negative mean
+daily excess returns under the tested HAC specifications.
+
+The machine-learning experiments failed to demonstrate
 reliable predictive superiority over simple baselines.
 
 The main contribution of this project is its research framework:
-strategies are tested under explicit assumptions, evaluated against
-benchmarks, examined for statistical support and rejected when
-the evidence is insufficient.
+strategies are tested under explicit assumptions, evaluated
+against benchmarks, examined for statistical support and
+rejected when the evidence is insufficient.
 
 The results should be interpreted as historical research findings,
 not investment advice or evidence of a deployable trading edge.
 """
+
 
 
 # ============================================================

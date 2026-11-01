@@ -10,6 +10,10 @@ REPORTS = ROOT / "reports"
 REGISTRY_FILE = REPORTS / "experiment_registry.csv"
 OUTPUT_FILE = REPORTS / "consolidated_research_report.md"
 
+PORTFOLIO_EXPERIMENT_ID = (
+    "US10_MR_OPEN_PORTFOLIO_OOS_2024_2025"
+)
+
 
 def format_pct(value):
     if pd.isna(value):
@@ -21,6 +25,10 @@ def format_num(value):
     if pd.isna(value):
         return "Unknown"
     return f"{value:.4f}"
+
+
+def is_multi_stock_portfolio(row):
+    return row["Experiment_ID"] == PORTFOLIO_EXPERIMENT_ID
 
 
 def main():
@@ -50,6 +58,8 @@ def main():
     if missing:
         raise ValueError(f"Missing registry columns: {missing}")
 
+    rejected = int((df["Decision"] == "REJECT").sum())
+
     lines = [
         "# AI Quant Research Lab",
         "",
@@ -61,11 +71,12 @@ def main():
         "## Experiment summary",
         "",
         f"- Experiments recorded: {len(df)}",
-        f"- Rejected experiments: {(df['Decision'] == 'REJECT').sum()}",
+        f"- Rejected experiments: {rejected}",
+        f"- Other decisions: {len(df) - rejected}",
         "",
         "## Results",
         "",
-        "| Experiment | Asset | Strategy | Evaluation period | Strategy return | Buy-and-hold return | Return difference | Strategy Sharpe | Buy-and-hold Sharpe | Max drawdown | HAC p-value | Decision |",
+        "| Experiment | Asset | Strategy | Evaluation period | Strategy return | Benchmark return | Return difference | Strategy Sharpe | Benchmark Sharpe | Max drawdown | HAC p-value | Decision |",
         "|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
 
@@ -82,7 +93,6 @@ def main():
             pd.Series([row["HAC_P_Value"]]), errors="coerce"
         ).iloc[0]
 
-        
         table_values = [
             row["Experiment_ID"],
             row["Asset"],
@@ -98,8 +108,9 @@ def main():
             row["Decision"],
         ]
 
-        lines.append("| " + " | ".join(str(value) for value in table_values) + " |")
-        
+        lines.append(
+            "| " + " | ".join(str(value) for value in table_values) + " |"
+        )
 
     lines.extend([
         "",
@@ -112,6 +123,13 @@ def main():
     for _, row in df.iterrows():
         strategy_return = row["Strategy_Total_Return"]
         benchmark_return = row["Buy_Hold_Total_Return"]
+        portfolio_experiment = is_multi_stock_portfolio(row)
+
+        benchmark_name = (
+            "equal-weighted daily rebalanced benchmark"
+            if portfolio_experiment
+            else "buy-and-hold"
+        )
 
         lines.append(f"### {row['Experiment_ID']}")
         lines.append("")
@@ -121,21 +139,19 @@ def main():
 
             if difference > 0:
                 lines.append(
-                    f"The strategy outperformed buy-and-hold by "
-                    f"{format_pct(difference)} in total return."
+                    f"The strategy outperformed the {benchmark_name} "
+                    f"by {format_pct(difference)} in total return."
                 )
             else:
                 lines.append(
-                    f"The strategy underperformed buy-and-hold by "
-                    f"{format_pct(abs(difference))} in total return."
+                    f"The strategy underperformed the {benchmark_name} "
+                    f"by {format_pct(abs(difference))} in total return."
                 )
         else:
             lines.append("The total-return comparison is unavailable.")
 
         lines.append("")
-        lines.append(
-            f"- Recorded decision: **{row['Decision']}**"
-        )
+        lines.append(f"- Recorded decision: **{row['Decision']}**")
 
         row_p_value = pd.to_numeric(
             pd.Series([row["HAC_P_Value"]]),
@@ -155,6 +171,19 @@ def main():
         if pd.notna(reason) and str(reason).strip():
             lines.append(f"- Recorded rationale: {reason}")
 
+        if portfolio_experiment:
+            lines.extend([
+                "",
+                "- Portfolio construction: equal-weighted daily rebalancing "
+                "across ten stocks.",
+                "- Statistical test: HAC test of mean daily portfolio "
+                "excess return.",
+                "- HAC lag sensitivity: significance was retained at "
+                "lags 1, 5, 10 and 20.",
+                "- Scope: results are conditional on the selected universe "
+                "and 2024–2025 evaluation period.",
+            ])
+
         lines.append("")
 
     lines.extend([
@@ -163,6 +192,14 @@ def main():
         "- These results describe the tested historical periods only.",
         "- Strategies were evaluated over different date ranges; "
         "returns should not be compared without considering that difference.",
+        "- The multi-stock portfolio benchmark is an equal-weighted, "
+        "daily rebalanced basket, not a conventional fixed-quantity "
+        "buy-and-hold portfolio.",
+        "- The ten-stock universe is selected and is not a point-in-time "
+        "historical universe. Survivorship and selection bias may affect "
+        "the findings.",
+        "- The universe is not broadly sector-balanced; sector-level "
+        "results have very small sample sizes.",
         "- Missing statistical tests are unknown, not evidence of significance.",
         "- Repeatedly testing strategies on the same data can introduce "
         "selection bias and overfitting.",
@@ -174,6 +211,7 @@ def main():
 
     OUTPUT_FILE.write_text("\n".join(lines), encoding="utf-8")
     print(f"Research report saved to: {OUTPUT_FILE}")
+    print(f"Experiments included: {len(df)}")
 
 
 if __name__ == "__main__":

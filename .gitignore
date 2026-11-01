@@ -36,5 +36,7 @@ htmlcov/
 # Locally stored market data
 data/*.csv
 
+data/multi_stock/*.csv
+
 # Superseded report
 AI_Quant_Research_Lab_Final_Report.pdf

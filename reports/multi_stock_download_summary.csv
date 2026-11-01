@@ -1,0 +1,11 @@
+ticker,status,observations,first_date,last_date,file,error
+AAPL,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/AAPL_daily.csv,
+MSFT,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/MSFT_daily.csv,
+NVDA,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/NVDA_daily.csv,
+GOOGL,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/GOOGL_daily.csv,
+AMZN,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/AMZN_daily.csv,
+WMT,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/WMT_daily.csv,
+JPM,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/JPM_daily.csv,
+GS,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/GS_daily.csv,
+XOM,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/XOM_daily.csv,
+JNJ,DOWNLOADED,1261,2021-01-04,2026-01-09,data/multi_stock/JNJ_daily.csv,

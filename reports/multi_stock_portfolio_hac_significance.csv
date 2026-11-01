@@ -1,0 +1,2 @@
+Observations,Mean_Daily_Excess_Return,Annualized_Mean_Excess_Return,HAC_Standard_Error,HAC_T_Statistic,HAC_P_Value,CI_95_Lower,CI_95_Upper,Stocks,Portfolio_Construction,Conclusion
+501,-0.0010811398049587844,-0.27244723084961364,0.0004117223496002242,-2.625895354013581,0.00864213819016172,-0.0018881007818054327,-0.00027417882811213564,10,Equal-weighted daily rebalanced,Significant

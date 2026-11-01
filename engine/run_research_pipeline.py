@@ -2,6 +2,7 @@
 from pathlib import Path
 import subprocess
 import sys
+
 import pandas as pd
 
 from data.validate_market_data import validate_market_data
@@ -21,6 +22,7 @@ REPORTS_DIR = PROJECT_ROOT / "reports"
 # ============================================================
 
 REQUIRED_INPUT_REPORTS = [
+    # Original AAPL research
     "experiment_registry.csv",
     "aapl_moving_average_summary.csv",
     "aapl_parameter_robustness.csv",
@@ -37,6 +39,18 @@ REQUIRED_INPUT_REPORTS = [
     "best_day_dependency_comparison.csv",
     "extreme_day_analysis.csv",
     "april_2025_regime_analysis.csv",
+
+    # Multi-stock research
+    "multi_stock_validation_summary.csv",
+    "multi_stock_mean_reversion_open_summary.csv",
+    "multi_stock_mean_reversion_open_daily.csv",
+    "multi_stock_cross_sectional_statistics.csv",
+    "multi_stock_sector_statistics.csv",
+    "multi_stock_cost_sensitivity_detailed.csv",
+    "multi_stock_cost_sensitivity_summary.csv",
+    "multi_stock_hac_significance.csv",
+    "multi_stock_portfolio_hac_significance.csv",
+    "multi_stock_hac_lag_sensitivity.csv",
 ]
 
 
@@ -57,17 +71,13 @@ EXPECTED_OUTPUTS = [
 # ============================================================
 
 def validate_market_datasets():
-    """Validate the historical market datasets."""
+    """Validate original AAPL historical market datasets."""
 
-    print("\nValidating historical market data...", flush=True)
+    print("\nValidating original AAPL market data...", flush=True)
 
-    validate_market_data(
-        DATA_DIR / "aapl_daily.csv"
-    )
+    validate_market_data(DATA_DIR / "aapl_daily.csv")
 
-    validate_market_data(
-        DATA_DIR / "aapl_daily_extended.csv"
-    )
+    validate_market_data(DATA_DIR / "aapl_daily_extended.csv")
 
     adjusted_data = DATA_DIR / "aapl_adjusted_close.csv"
 
@@ -76,7 +86,7 @@ def validate_market_datasets():
             f"Adjusted-price dataset is missing or empty: {adjusted_data}"
         )
 
-    print("Historical market data checks completed.", flush=True)
+    print("Original AAPL market data validation completed.", flush=True)
 
 
 # ============================================================
@@ -98,7 +108,7 @@ def run_module(module_name):
 
 
 # ============================================================
-# REGISTER MACHINE LEARNING EXPERIMENTS
+# 3. REGISTER MACHINE-LEARNING EXPERIMENTS
 # ============================================================
 
 def sync_ml_experiments_to_registry():
@@ -192,12 +202,10 @@ def sync_ml_experiments_to_registry():
         for record in new_records
     }
 
-    # Remove previous versions of these two records.
     registry = registry[
         ~registry["Experiment_ID"].isin(new_ids)
     ]
 
-    # Append the latest experiment results.
     registry = pd.concat(
         [registry, pd.DataFrame(new_records)],
         ignore_index=True,
@@ -206,12 +214,13 @@ def sync_ml_experiments_to_registry():
     registry.to_csv(registry_path, index=False)
 
     print(
-        f"Registry synchronized: {len(new_records)} ML experiments added.",
+        f"Registry synchronized: {len(new_records)} ML experiments.",
         flush=True,
     )
 
+
 # ============================================================
-# 3. VALIDATE REQUIRED RESEARCH REPORTS
+# 4. VALIDATE REQUIRED RESEARCH REPORTS
 # ============================================================
 
 def validate_required_reports():
@@ -241,7 +250,7 @@ def validate_required_reports():
 
 
 # ============================================================
-# 4. VERIFY GENERATED OUTPUTS
+# 5. VERIFY GENERATED OUTPUTS
 # ============================================================
 
 def check_output(path):
@@ -264,26 +273,34 @@ def check_output(path):
 
 def main():
 
-    print("=" * 65, flush=True)
+    print("=" * 70, flush=True)
     print("AI QUANT RESEARCH LAB", flush=True)
     print("UNIFIED RESEARCH PIPELINE", flush=True)
-    print("=" * 65, flush=True)
+    print("=" * 70, flush=True)
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     # --------------------------------------------------------
-    # STAGE 1: Validate historical market data.
+    # STAGE 1: Original AAPL market data validation
     # --------------------------------------------------------
 
-    print("\nSTAGE 1: MARKET DATA VALIDATION", flush=True)
+    print("\nSTAGE 1: ORIGINAL AAPL DATA VALIDATION", flush=True)
 
     validate_market_datasets()
 
     # --------------------------------------------------------
-    # STAGE 2: Execute standalone ML experiments.
+    # STAGE 2: Multi-stock data validation
     # --------------------------------------------------------
 
-    print("\nSTAGE 2: MACHINE LEARNING EXPERIMENTS", flush=True)
+    print("\nSTAGE 2: MULTI-STOCK DATA VALIDATION", flush=True)
+
+    run_module("data.validate_multi_stock_data")
+
+    # --------------------------------------------------------
+    # STAGE 3: Single-stock machine-learning experiments
+    # --------------------------------------------------------
+
+    print("\nSTAGE 3: MACHINE-LEARNING EXPERIMENTS", flush=True)
 
     run_module("engine.run_ml_experiment")
 
@@ -292,60 +309,100 @@ def main():
     sync_ml_experiments_to_registry()
 
     # --------------------------------------------------------
-    # STAGE 3: Validate all research report inputs.
+    # STAGE 4: Multi-stock mean-reversion experiment
     # --------------------------------------------------------
 
-    print("\nSTAGE 3: RESEARCH REPORT VALIDATION", flush=True)
+    print("\nSTAGE 4: MULTI-STOCK MEAN-REVERSION RESEARCH", flush=True)
+
+    run_module("engine.run_multi_stock_mean_reversion")
+
+    # --------------------------------------------------------
+    # STAGE 5: Multi-stock descriptive analysis
+    # --------------------------------------------------------
+
+    print("\nSTAGE 5: CROSS-SECTIONAL ANALYSIS", flush=True)
+
+    run_module("engine.analyze_multi_stock_results")
+
+    # --------------------------------------------------------
+    # STAGE 6: Multi-stock transaction-cost sensitivity
+    # --------------------------------------------------------
+
+    print("\nSTAGE 6: TRANSACTION-COST SENSITIVITY", flush=True)
+
+    run_module("engine.analyze_multi_stock_cost_sensitivity")
+
+    # --------------------------------------------------------
+    # STAGE 7: Multi-stock statistical significance
+    # --------------------------------------------------------
+
+    print("\nSTAGE 7: MULTI-STOCK HAC SIGNIFICANCE", flush=True)
+
+    run_module("engine.analyze_multi_stock_significance")
+
+    # --------------------------------------------------------
+    # STAGE 8: HAC lag sensitivity
+    # --------------------------------------------------------
+
+    print("\nSTAGE 8: HAC LAG SENSITIVITY", flush=True)
+
+    run_module("engine.analyze_hac_lag_sensitivity")
+
+    # --------------------------------------------------------
+    # STAGE 9: Validate all research report inputs
+    # --------------------------------------------------------
+
+    print("\nSTAGE 9: RESEARCH REPORT VALIDATION", flush=True)
 
     validate_required_reports()
 
     # --------------------------------------------------------
-    # STAGE 4: Regenerate experiment registry summary.
+    # STAGE 10: Regenerate experiment registry summary
     # --------------------------------------------------------
 
-    print("\nSTAGE 4: EXPERIMENT REGISTRY", flush=True)
+    print("\nSTAGE 10: EXPERIMENT REGISTRY", flush=True)
 
     run_module("engine.registry_summary")
 
     check_output(EXPECTED_OUTPUTS[0])
 
     # --------------------------------------------------------
-    # STAGE 5: Generate registry-based Markdown report.
+    # STAGE 11: Generate consolidated Markdown report
     # --------------------------------------------------------
 
-    print("\nSTAGE 5: CONSOLIDATED RESEARCH REPORT", flush=True)
+    print("\nSTAGE 11: CONSOLIDATED RESEARCH REPORT", flush=True)
 
     run_module("engine.generate_registry_report")
 
     check_output(EXPECTED_OUTPUTS[1])
 
     # --------------------------------------------------------
-    # STAGE 6: Generate comprehensive research report.
+    # STAGE 12: Generate comprehensive Markdown report
     # --------------------------------------------------------
 
-    print("\nSTAGE 6: COMPREHENSIVE RESEARCH REPORT", flush=True)
+    print("\nSTAGE 12: COMPREHENSIVE RESEARCH REPORT", flush=True)
 
     run_module("engine.generate_final_report")
 
     check_output(EXPECTED_OUTPUTS[2])
 
     # --------------------------------------------------------
-    # STAGE 7: Generate final PDF.
+    # STAGE 13: Generate final PDF
     # --------------------------------------------------------
 
-    print("\nSTAGE 7: FINAL PDF GENERATION", flush=True)
+    print("\nSTAGE 13: FINAL PDF GENERATION", flush=True)
 
     run_module("engine.generate_pdf_report")
 
     check_output(EXPECTED_OUTPUTS[3])
 
     # --------------------------------------------------------
-    # STAGE 8: Final verification.
+    # STAGE 14: Final verification
     # --------------------------------------------------------
 
-    print("\n" + "=" * 65, flush=True)
+    print("\n" + "=" * 70, flush=True)
     print("ALL PIPELINE STAGES COMPLETED SUCCESSFULLY", flush=True)
-    print("=" * 65, flush=True)
+    print("=" * 70, flush=True)
 
     print("\nGENERATED OUTPUTS:")
 
