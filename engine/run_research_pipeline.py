@@ -2,6 +2,9 @@
 from pathlib import Path
 import subprocess
 import sys
+import pandas as pd
+
+from data.validate_market_data import validate_market_data
 
 
 # ============================================================
@@ -9,11 +12,12 @@ import sys
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 
 
 # ============================================================
-# REQUIRED SOURCE FILES
+# REQUIRED INPUT REPORTS
 # ============================================================
 
 REQUIRED_INPUT_REPORTS = [
@@ -37,7 +41,7 @@ REQUIRED_INPUT_REPORTS = [
 
 
 # ============================================================
-# EXPECTED GENERATED FILES
+# EXPECTED GENERATED OUTPUTS
 # ============================================================
 
 EXPECTED_OUTPUTS = [
@@ -49,11 +53,171 @@ EXPECTED_OUTPUTS = [
 
 
 # ============================================================
-# VALIDATION
+# 1. VALIDATE MARKET DATA
 # ============================================================
 
-def check_input_reports():
-    """Check that all source reports exist and are non-empty."""
+def validate_market_datasets():
+    """Validate the historical market datasets."""
+
+    print("\nValidating historical market data...", flush=True)
+
+    validate_market_data(
+        DATA_DIR / "aapl_daily.csv"
+    )
+
+    validate_market_data(
+        DATA_DIR / "aapl_daily_extended.csv"
+    )
+
+    adjusted_data = DATA_DIR / "aapl_adjusted_close.csv"
+
+    if not adjusted_data.is_file() or adjusted_data.stat().st_size == 0:
+        raise FileNotFoundError(
+            f"Adjusted-price dataset is missing or empty: {adjusted_data}"
+        )
+
+    print("Historical market data checks completed.", flush=True)
+
+
+# ============================================================
+# 2. RUN PROJECT MODULES
+# ============================================================
+
+def run_module(module_name):
+    """Execute a project module using the active Python interpreter."""
+
+    print(f"\nRunning {module_name}...", flush=True)
+
+    subprocess.run(
+        [sys.executable, "-m", module_name],
+        cwd=PROJECT_ROOT,
+        check=True,
+    )
+
+    print(f"Completed: {module_name}", flush=True)
+
+
+# ============================================================
+# REGISTER MACHINE LEARNING EXPERIMENTS
+# ============================================================
+
+def sync_ml_experiments_to_registry():
+    """Synchronize static and walk-forward ML results with the registry."""
+
+    print("\nSynchronizing ML experiments with registry...", flush=True)
+
+    registry_path = REPORTS_DIR / "experiment_registry.csv"
+
+    static_path = REPORTS_DIR / "ml_performance.csv"
+    walk_forward_path = REPORTS_DIR / "walk_forward_performance.csv"
+
+    registry = pd.read_csv(registry_path)
+
+    static = pd.read_csv(static_path, index_col=0)
+    walk_forward = pd.read_csv(walk_forward_path, index_col=0)
+
+    def get_metrics(performance, strategy_name):
+        return {
+            "Strategy_Total_Return": performance.loc[
+                "Total Return", strategy_name
+            ],
+            "Buy_Hold_Total_Return": performance.loc[
+                "Total Return", "Buy and Hold"
+            ],
+            "Strategy_Sharpe": performance.loc[
+                "Sharpe Ratio", strategy_name
+            ],
+            "Buy_Hold_Sharpe": performance.loc[
+                "Sharpe Ratio", "Buy and Hold"
+            ],
+            "Strategy_Max_Drawdown": performance.loc[
+                "Max Drawdown", strategy_name
+            ],
+        }
+
+    static_metrics = get_metrics(static, "ML Strategy")
+
+    walk_forward_metrics = get_metrics(
+        walk_forward, "Walk-Forward ML"
+    )
+
+    new_records = [
+        {
+            "Experiment_ID": "AAPL_STATIC_ML_OOS_2024_2025",
+            "Asset": "AAPL",
+            "Strategy": "Static Logistic Regression",
+            "Hypothesis": (
+                "Historical price and volatility features may predict "
+                "the direction of the next trading session."
+            ),
+            "Training_Period": "2021-2023",
+            "Evaluation_Period": "2024-2025",
+            "Reference_Transaction_Cost": 0.001,
+            **static_metrics,
+            "HAC_P_Value": None,
+            "Decision": "REJECT",
+            "Reason": (
+                "Underperformed buy-and-hold on total return and Sharpe. "
+                "ROC AUC was below 0.50 and Brier score was worse than "
+                "the historical-rate baseline. No predictive edge "
+                "was demonstrated."
+            ),
+        },
+        {
+            "Experiment_ID": "AAPL_WALK_FORWARD_ML_OOS_2024_2025",
+            "Asset": "AAPL",
+            "Strategy": "Walk-Forward Logistic Regression",
+            "Hypothesis": (
+                "Repeatedly retraining a logistic regression model "
+                "using expanding historical data may improve "
+                "next-session return-direction predictions."
+            ),
+            "Training_Period": "Expanding historical window",
+            "Evaluation_Period": "2024-2025",
+            "Reference_Transaction_Cost": 0.001,
+            **walk_forward_metrics,
+            "HAC_P_Value": None,
+            "Decision": "REJECT",
+            "Reason": (
+                "Underperformed buy-and-hold on total return and Sharpe. "
+                "ROC AUC was below 0.50 and Brier score was worse than "
+                "the historical-rate baseline. Expanding-window "
+                "retraining did not establish a predictive edge."
+            ),
+        },
+    ]
+
+    new_ids = {
+        record["Experiment_ID"]
+        for record in new_records
+    }
+
+    # Remove previous versions of these two records.
+    registry = registry[
+        ~registry["Experiment_ID"].isin(new_ids)
+    ]
+
+    # Append the latest experiment results.
+    registry = pd.concat(
+        [registry, pd.DataFrame(new_records)],
+        ignore_index=True,
+    )
+
+    registry.to_csv(registry_path, index=False)
+
+    print(
+        f"Registry synchronized: {len(new_records)} ML experiments added.",
+        flush=True,
+    )
+
+# ============================================================
+# 3. VALIDATE REQUIRED RESEARCH REPORTS
+# ============================================================
+
+def validate_required_reports():
+    """Check that all required research reports exist and are non-empty."""
+
+    print("\nValidating research report inputs...", flush=True)
 
     missing = []
 
@@ -65,16 +229,20 @@ def check_input_reports():
 
     if missing:
         raise FileNotFoundError(
-            "Required input reports are missing or empty:\n"
+            "Required research reports are missing or empty:\n"
             + "\n".join(f"  - {name}" for name in missing)
         )
 
     print(
-        f"Input report check: PASSED "
+        f"Research report validation: PASSED "
         f"({len(REQUIRED_INPUT_REPORTS)} files)",
         flush=True,
     )
 
+
+# ============================================================
+# 4. VERIFY GENERATED OUTPUTS
+# ============================================================
 
 def check_output(path):
     """Verify that a generated output exists and is non-empty."""
@@ -84,65 +252,112 @@ def check_output(path):
             f"Expected output was not generated correctly: {path}"
         )
 
-    print(f"Verified: {path.relative_to(PROJECT_ROOT)}", flush=True)
-
-
-# ============================================================
-# MODULE EXECUTION
-# ============================================================
-
-def run_module(module_name):
-    """Run a project module using the current Python interpreter."""
-
-    print(f"\nRunning {module_name}...", flush=True)
-
-    subprocess.run(
-        [sys.executable, "-m", module_name],
-        cwd=PROJECT_ROOT,
-        check=True,
+    print(
+        f"Verified: {path.relative_to(PROJECT_ROOT)}",
+        flush=True,
     )
 
 
 # ============================================================
-# MAIN PIPELINE
+# MAIN RESEARCH PIPELINE
 # ============================================================
 
 def main():
-    print("=" * 60, flush=True)
+
+    print("=" * 65, flush=True)
     print("AI QUANT RESEARCH LAB", flush=True)
     print("UNIFIED RESEARCH PIPELINE", flush=True)
-    print("=" * 60, flush=True)
+    print("=" * 65, flush=True)
 
-    # 1. Validate original research inputs.
-    check_input_reports()
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 2. Regenerate experiment registry summary.
+    # --------------------------------------------------------
+    # STAGE 1: Validate historical market data.
+    # --------------------------------------------------------
+
+    print("\nSTAGE 1: MARKET DATA VALIDATION", flush=True)
+
+    validate_market_datasets()
+
+    # --------------------------------------------------------
+    # STAGE 2: Execute standalone ML experiments.
+    # --------------------------------------------------------
+
+    print("\nSTAGE 2: MACHINE LEARNING EXPERIMENTS", flush=True)
+
+    run_module("engine.run_ml_experiment")
+
+    run_module("engine.run_walk_forward_experiment")
+
+    sync_ml_experiments_to_registry()
+
+    # --------------------------------------------------------
+    # STAGE 3: Validate all research report inputs.
+    # --------------------------------------------------------
+
+    print("\nSTAGE 3: RESEARCH REPORT VALIDATION", flush=True)
+
+    validate_required_reports()
+
+    # --------------------------------------------------------
+    # STAGE 4: Regenerate experiment registry summary.
+    # --------------------------------------------------------
+
+    print("\nSTAGE 4: EXPERIMENT REGISTRY", flush=True)
+
     run_module("engine.registry_summary")
+
     check_output(EXPECTED_OUTPUTS[0])
 
-    # 3. Generate registry-based Markdown report.
+    # --------------------------------------------------------
+    # STAGE 5: Generate registry-based Markdown report.
+    # --------------------------------------------------------
+
+    print("\nSTAGE 5: CONSOLIDATED RESEARCH REPORT", flush=True)
+
     run_module("engine.generate_registry_report")
+
     check_output(EXPECTED_OUTPUTS[1])
 
-    # 4. Generate comprehensive research report.
+    # --------------------------------------------------------
+    # STAGE 6: Generate comprehensive research report.
+    # --------------------------------------------------------
+
+    print("\nSTAGE 6: COMPREHENSIVE RESEARCH REPORT", flush=True)
+
     run_module("engine.generate_final_report")
+
     check_output(EXPECTED_OUTPUTS[2])
 
-    # 5. Generate the final PDF.
+    # --------------------------------------------------------
+    # STAGE 7: Generate final PDF.
+    # --------------------------------------------------------
+
+    print("\nSTAGE 7: FINAL PDF GENERATION", flush=True)
+
     run_module("engine.generate_pdf_report")
+
     check_output(EXPECTED_OUTPUTS[3])
 
-    # 6. Final verification.
-    print("\n" + "=" * 60, flush=True)
+    # --------------------------------------------------------
+    # STAGE 8: Final verification.
+    # --------------------------------------------------------
+
+    print("\n" + "=" * 65, flush=True)
     print("ALL PIPELINE STAGES COMPLETED SUCCESSFULLY", flush=True)
-    print("=" * 60, flush=True)
+    print("=" * 65, flush=True)
+
+    print("\nGENERATED OUTPUTS:")
 
     for path in EXPECTED_OUTPUTS:
         size_kb = path.stat().st_size / 1024
+
         print(
             f"{path.name}: {size_kb:.2f} KB",
             flush=True,
         )
+
+    print("\nResearch pipeline execution finished.", flush=True)
 
 
 if __name__ == "__main__":

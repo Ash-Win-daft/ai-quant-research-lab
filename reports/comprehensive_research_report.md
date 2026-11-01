@@ -18,8 +18,8 @@ The research emphasizes out-of-sample evaluation, transaction costs,
 statistical testing, parameter sensitivity and explicit rejection
 of strategies that fail to demonstrate convincing evidence.
 
-The experiment registry currently contains **3 experiments**,
-of which **3 are rejected**.
+The experiment registry currently contains **5 experiments**,
+of which **5 are rejected**.
 
 The findings do not establish a reliable benchmark-beating trading edge.
 Instead, the experiments demonstrate the importance of realistic
@@ -211,21 +211,27 @@ direction of subsequent returns.
 
 ### Prediction metrics
 
-| Model                   |   Accuracy |   Balanced Accuracy |   Precision |   Recall | ROC AUC       |
-|:------------------------|-----------:|--------------------:|------------:|---------:|:--------------|
-| Logistic Regression     |     0.4731 |              0.4583 |      0.5136 |   0.6227 | 0.4661        |
-| Training Majority Class |     0.5449 |              0.5    |      0.5449 |   1      | Not available |
-| Always Predict Up       |     0.5449 |              0.5    |      0.5449 |   1      | Not available |
+| Metric                               |   Value |
+|:-------------------------------------|--------:|
+| Accuracy                             |  0.477  |
+| Balanced Accuracy                    |  0.4623 |
+| Precision                            |  0.5166 |
+| Recall                               |  0.6264 |
+| ROC AUC                              |  0.4662 |
+| Brier Score                          |  0.2587 |
+| Training Majority Baseline Accuracy  |  0.5449 |
+| Always-Up Baseline Accuracy          |  0.5449 |
+| Historical-Rate Baseline Brier Score |  0.2484 |
 
 ### Strategy performance
 
-| Metric                      | ML Strategy   | Buy and Hold   |
-|:----------------------------|:--------------|:---------------|
-| Total Return                | -0.82%        | 47.83%         |
-| CAGR                        | -0.41%        | 21.73%         |
-| Annualized Volatility       | 23.64%        | 27.89%         |
-| Sharpe Ratio (0% risk-free) | 0.0990        | 0.8429         |
-| Maximum Drawdown            | -31.18%       | -33.36%        |
+| Metric                | ML Strategy   | Buy and Hold   |
+|:----------------------|:--------------|:---------------|
+| Total Return          | 3.24%         | 47.83%         |
+| CAGR                  | 1.62%         | 21.73%         |
+| Annualized Volatility | 23.44%        | 27.89%         |
+| Sharpe Ratio          | 0.1838        | 0.8429         |
+| Max Drawdown          | -31.18%       | -33.36%        |
 
 The model's ROC AUC was approximately 0.4661, below the
 0.50 level associated with random ranking.
@@ -251,20 +257,22 @@ once and evaluating it on a fixed holdout period.
 |:-------------------------------------|--------:|
 | Accuracy                             |  0.513  |
 | Balanced Accuracy                    |  0.4848 |
+| Precision                            |  0.5356 |
+| Recall                               |  0.7985 |
 | ROC AUC                              |  0.4469 |
 | Brier Score                          |  0.2542 |
-| Majority-Class Baseline Accuracy     |  0.5449 |
+| Expanding Majority Baseline Accuracy |  0.5449 |
 | Historical-Rate Baseline Brier Score |  0.2485 |
 
 ### Strategy performance
 
-| Metric                | Walk-Forward Strategy   | Buy and Hold   |
-|:----------------------|:------------------------|:---------------|
-| Total Return          | 13.00%                  | 47.83%         |
-| CAGR                  | 6.34%                   | 21.73%         |
-| Annualized Volatility | 25.38%                  | 27.89%         |
-| Sharpe Ratio          | 0.3676                  | 0.8429         |
-| Max Drawdown          | -31.73%                 | -33.36%        |
+| Metric                | Walk-Forward ML   | Buy and Hold   |
+|:----------------------|:------------------|:---------------|
+| Total Return          | 13.00%            | 47.83%         |
+| CAGR                  | 6.34%             | 21.73%         |
+| Annualized Volatility | 25.38%            | 27.89%         |
+| Sharpe Ratio          | 0.3676            | 0.8429         |
+| Max Drawdown          | -31.73%           | -33.36%        |
 
 The walk-forward model did not establish predictive performance
 above its simple baselines. Its trading strategy also underperformed
@@ -361,14 +369,16 @@ explanations for strategy performance.
 
 The registry records formal strategy experiments and their decisions.
 
-| Experiment_ID              | Strategy                        | Evaluation_Period   | Strategy_Total_Return   | Buy_Hold_Total_Return   |   Strategy_Sharpe |   Buy_Hold_Sharpe | HAC_P_Value   | Decision   |
-|:---------------------------|:--------------------------------|:--------------------|:------------------------|:------------------------|------------------:|------------------:|:--------------|:-----------|
-| AAPL_MR_OOS_2024_2025      | Mean Reversion                  | 2024-2025           | 8.72%                   | 42.54%                  |            0.3495 |            0.7742 | 0.3546        | REJECT     |
-| AAPL_SMA_BASELINE          | Moving Average                  | 2021-2025           | 33.15%                  | 115.81%                 |            0.4113 |            0.6932 | Not available | REJECT     |
-| AAPL_MR_OPEN_OOS_2024_2025 | Mean Reversion (Open Execution) | 2024-2025           | 11.50%                  | 47.28%                  |            0.4018 |            0.7998 | 0.3404        | REJECT     |
+| Experiment_ID                      | Strategy                         | Evaluation_Period   | Strategy_Total_Return   | Buy_Hold_Total_Return   |   Strategy_Sharpe |   Buy_Hold_Sharpe | HAC_P_Value   | Decision   |
+|:-----------------------------------|:---------------------------------|:--------------------|:------------------------|:------------------------|------------------:|------------------:|:--------------|:-----------|
+| AAPL_MR_OOS_2024_2025              | Mean Reversion                   | 2024-2025           | 8.72%                   | 42.54%                  |            0.3495 |            0.7742 | 0.3546        | REJECT     |
+| AAPL_SMA_BASELINE                  | Moving Average                   | 2021-2025           | 33.15%                  | 115.81%                 |            0.4113 |            0.6932 | Not available | REJECT     |
+| AAPL_MR_OPEN_OOS_2024_2025         | Mean Reversion (Open Execution)  | 2024-2025           | 11.50%                  | 47.28%                  |            0.4018 |            0.7998 | 0.3404        | REJECT     |
+| AAPL_STATIC_ML_OOS_2024_2025       | Static Logistic Regression       | 2024-2025           | 3.24%                   | 47.83%                  |            0.1838 |            0.8429 | Not available | REJECT     |
+| AAPL_WALK_FORWARD_ML_OOS_2024_2025 | Walk-Forward Logistic Regression | 2024-2025           | 13.00%                  | 47.83%                  |            0.3676 |            0.8429 | Not available | REJECT     |
 
-The registry currently contains 3 experiments,
-of which 3 are rejected.
+The registry currently contains 5 experiments,
+of which 5 are rejected.
 
 The moving-average registry entry does not have a verified
 HAC significance result. Its unavailable p-value is not
