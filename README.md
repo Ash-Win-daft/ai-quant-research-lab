@@ -1,366 +1,450 @@
-
 # AI Quant Research Lab
+### A Research Framework for Testing and Falsifying Systematic Trading Strategies
 
-**A quantitative research project focused on testing, evaluating, and attempting to falsify systematic trading strategies.**
+A Python-based quantitative research project that develops, evaluates, and attempts to disprove systematic trading strategies using historical US equity data.
 
-## Overview
+The project combines data validation, backtesting, transaction-cost modelling, out-of-sample evaluation, machine learning, walk-forward testing, cross-sectional analysis, and statistical inference.
 
-The AI Quant Research Lab is a Python-based quantitative research project designed to investigate whether systematic trading strategies demonstrate a measurable edge over a benchmark after accounting for execution timing, transaction costs, risk, and out-of-sample performance.
+**The central research principle: a strategy should demonstrate evidence of an edge—not simply produce an attractive historical backtest.**
 
-Rather than assuming a strategy works because it performs well historically, the project emphasizes disciplined experimentation, statistical evaluation, robustness testing, and rejection of unsupported trading hypotheses.
+> **Current research conclusion:** The strategies evaluated in this project did not establish a reliable positive edge over their respective benchmarks. All six registered experiments were rejected. The project treats these negative results as research findings rather than attempting to present them as successful trading strategies.
 
-The central research principle is simple: **a strategy must provide evidence of an edge, not merely produce an attractive historical backtest.**
+---
 
-## System Architecture
+## 1. Project Overview
+
+Many trading strategies appear profitable when evaluated on historical data. However, apparent performance can result from overfitting, data leakage, unrealistic execution assumptions, transaction costs, or market-specific behaviour.
+
+This project was designed to investigate those problems.
+
+It began with an Apple (AAPL) research pipeline and was subsequently expanded into a ten-stock US equity study. The framework evaluates both rule-based strategies and machine-learning approaches, with particular attention to out-of-sample performance and statistical evidence.
+
+The research currently covers:
+
+- Historical market-data validation.
+- Simple moving-average strategy baselines.
+- Mean-reversion strategies using close-based and open-based execution.
+- Logistic-regression classification for next-session market direction.
+- Expanding-window walk-forward machine learning.
+- Cross-sectional evaluation across ten US stocks.
+- Transaction-cost sensitivity analysis.
+- Newey-West heteroskedasticity and autocorrelation-consistent (HAC) inference.
+- Multiple-testing correction using the Holm procedure.
+- Automated experiment registration and research reporting.
+
+## 2. Research Universe
+
+The multi-stock study uses ten US-listed equities across five broad sector classifications.
+
+| Ticker | Company | Sector |
+|---|---|---|
+| AAPL | Apple | Technology |
+| MSFT | Microsoft | Technology |
+| NVDA | NVIDIA | Technology |
+| GOOGL | Alphabet | Technology |
+| AMZN | Amazon | Consumer |
+| WMT | Walmart | Consumer |
+| JPM | JPMorgan Chase | Financials |
+| GS | Goldman Sachs | Financials |
+| XOM | Exxon Mobil | Energy |
+| JNJ | Johnson & Johnson | Healthcare |
+
+The datasets contain 1,261 daily observations per stock, covering 4 January 2021 to 9 January 2026.
+
+The principal out-of-sample evaluation period is 2024–2025.
+
+**Important universe limitation:** This is a selected research universe, not a point-in-time historical index constituent universe. It does not eliminate survivorship or selection bias. The sector sample sizes are also small, so sector-level results should not be interpreted as broad sector conclusions.
+
+## 3. Research Architecture
+
+The framework separates data preparation, strategy evaluation, statistical analysis, and reporting.
 
 ```mermaid
 flowchart TD
-    A["Historical AAPL Market Data<br/>Daily OHLCV"] --> B["Data Validation<br/>engine/data.py"]
-    B --> C["Research Experiments"]
+    A["Historical Market Data"] --> B["Data Validation"]
+    B --> C["AAPL Research"]
+    B --> D["10-Stock US Equity Universe"]
 
-    C --> D["Moving Average Strategy"]
-    C --> E["Mean Reversion Strategy"]
-    C --> F["Machine Learning Models"]
-    C --> G["Walk-Forward Validation"]
+    C --> E["SMA Baseline"]
+    C --> F["Mean Reversion"]
+    C --> G["Static ML"]
+    C --> H["Walk-Forward ML"]
 
-    D --> H["Backtesting Engine"]
-    E --> H
-    F --> H
-    G --> H
+    D --> I["Multi-Stock Mean Reversion"]
+    I --> J["Cross-Sectional Analysis"]
+    I --> K["Transaction Cost Sensitivity"]
 
-    H --> I["Performance Metrics<br/>Transaction Costs"]
-    I --> J["Statistical Evaluation<br/>HAC Significance"]
-    J --> K["Robustness & Falsification Tests"]
+    E --> L["Performance Evaluation"]
+    F --> L
+    G --> L
+    H --> L
+    J --> M["Statistical Inference"]
+    K --> M
+    L --> M
 
-    K --> L["Experiment Registry"]
-    L --> M["Research Results<br/>CSV Files"]
-
-    M --> N["Unified Research Pipeline"]
-    N --> O["Registry Summary"]
-    N --> P["Consolidated Report"]
-    N --> Q["Comprehensive Report"]
-    Q --> R["Final PDF Report"]
-
-    S["Jupyter Notebooks"] -.-> C
-    T["Automated Tests<br/>pytest"] -.-> H
-    T -.-> K
+    M --> N["Experiment Registry"]
+    N --> O["Automated Research Reports"]
 ```
 
-## Selected Research Results
+## 4. Key Research Findings
 
-### Machine Learning Strategy — Out-of-Sample Performance
+### 4.1 Multi-Stock Mean-Reversion Evaluation
 
-The logistic regression model was evaluated on out-of-sample AAPL daily data from 2024–2025.
+A mean-reversion strategy was configured using parameters selected on AAPL training data:
 
-The strategy failed to demonstrate useful predictive performance and substantially underperformed the buy-and-hold benchmark after assumed transaction costs.
+- Lookback window: 20 sessions.
+- Entry threshold: −5%.
+- Transaction cost: 0.10% per turnover.
+- Signal generation: previous-session closing information.
+- Execution and return measurement: open-to-open.
+- Out-of-sample period: 2024–2025.
 
-![AAPL ML Strategy Out-of-Sample Performance](reports/ml_strategy_performance.png)
+The same parameters were applied across all ten stocks.
 
-**Key findings:**
-- ROC AUC: 0.4661
-- ML strategy total return: -0.82%
-- Buy-and-hold total return: 47.83%
-- ML strategy Sharpe ratio: 0.099
-- Buy-and-hold Sharpe ratio: 0.843
+**Result: 0 out of 10 stocks outperformed their respective buy-and-hold benchmarks in total return.**
 
-These results led to rejection of the tested ML approach. They illustrate the importance of out-of-sample validation and realistic performance comparisons.
-
-### Mean-Reversion Strategies — Out-of-Sample Performance
-
-The mean-reversion strategy was evaluated on AAPL out-of-sample data from 2024–2025 using two execution conventions: close-to-close and open-to-open returns.
-
-![AAPL Mean-Reversion Execution Comparison](reports/mean_reversion_execution_comparison.png)
-
-**Key findings:**
-
-| Execution Method | Strategy Return | Buy-and-Hold Return |
+| Cross-sectional measure | Strategy | Buy and hold |
 |---|---:|---:|
-| Close execution | 8.72% | 42.54% |
-| Open execution | 11.50% | 47.28% |
+| Mean total return | 19.72% | 97.46% |
+| Median total return | 9.41% | 77.12% |
+| Mean Sharpe ratio | 0.491 | 1.211 |
+| Median Sharpe ratio | 0.426 | 1.231 |
+| Mean maximum drawdown | −10.07% | −28.00% |
 
-Both execution variants underperformed their respective buy-and-hold benchmarks. Neither strategy demonstrated statistically significant mean daily excess returns under the HAC-based statistical test (close execution: p = 0.3546; open execution: p = 0.3404).
+The strategy generally experienced smaller drawdowns, but this came with substantially lower returns and weaker risk-adjusted performance.
 
-The close-execution and open-execution results use different return intervals and should be interpreted separately. Both tested variants were rejected.
+The lower drawdown should therefore not be interpreted as evidence of superior overall performance.
 
-## Research Objectives
+### 4.2 Transaction-Cost Sensitivity
 
-- Develop and evaluate systematic trading strategies.
-- Separate parameter selection from out-of-sample evaluation.
-- Model transaction costs and trading-position changes.
-- Investigate execution timing and signal alignment.
-- Compare strategy performance against buy-and-hold benchmarks.
-- Evaluate risk using volatility, Sharpe ratio, and maximum drawdown.
-- Use statistical testing to investigate whether excess returns are distinguishable from noise.
-- Conduct robustness and transaction-cost sensitivity analyses.
-- Record experimental results and rejection decisions in a research registry.
+The strategy was evaluated at five transaction-cost assumptions.
 
-## Research Experiments
+| Cost per turnover | Mean strategy return | Stocks beating benchmark |
+|---:|---:|---:|
+| 0.00% | 22.02% | 0/10 |
+| 0.05% | 20.86% | 0/10 |
+| 0.10% | 19.72% | 0/10 |
+| 0.25% | 16.37% | 0/10 |
+| 0.50% | 11.06% | 0/10 |
 
-### 1. Moving-Average Strategy
+Even with transaction costs set to zero, none of the ten stocks outperformed its benchmark.
 
-Investigates whether moving-average trend signals can capture persistent price trends.
+This suggests that transaction costs were not the sole explanation for the strategy's underperformance.
 
-The strategy is evaluated against a buy-and-hold benchmark, with performance assessed through total return, risk-adjusted returns, and drawdown.
+### 4.3 Portfolio-Level Statistical Evaluation
 
-**Research outcome:** The tested strategy underperformed buy-and-hold over its registered evaluation period and was rejected.
+An equal-weighted daily rebalanced portfolio was constructed from the ten stocks.
 
-### 2. Mean-Reversion Strategy — Close Execution
-
-**Hypothesis:** Prices sufficiently below a rolling average may recover toward that average.
-
-Parameters are selected using historical training data from 2021–2023 and evaluated on the separate 2024–2025 out-of-sample period.
-
-The experiment evaluates performance using historical closing prices, transaction costs, and benchmark comparisons.
-
-**Research outcome:** The strategy underperformed buy-and-hold and did not demonstrate statistically significant mean daily excess returns under the HAC-based test. The experiment was rejected.
-
-### 3. Mean-Reversion Strategy — Open Execution
-
-This experiment investigates the same mean-reversion hypothesis with a more explicit execution model.
-
-Signals derived from the previous trading session's closing prices determine positions for subsequent open-to-open return intervals.
-
-Parameters are selected using 2021–2023 data and evaluated on 2024–2025 data.
-
-#### Out-of-Sample Results (2024–2025)
-
-| Metric | Mean Reversion | Buy and Hold |
+| Metric | Strategy portfolio | Benchmark portfolio |
 |---|---:|---:|
-| Total Return | 11.50% | 47.28% |
-| CAGR | 5.63% | 21.50% |
-| Annualized Volatility | 17.21% | 29.90% |
-| Sharpe Ratio | 0.402 | 0.800 |
-| Maximum Drawdown | -13.44% | -33.33% |
+| Total return | 17.69% | 97.34% |
+| Sharpe ratio | 0.8649 | 1.9342 |
+| Maximum drawdown | −5.39% | −22.45% |
 
-**Transaction cost assumption:** 0.10% per unit of turnover.
+The benchmark is an equal-weighted daily rebalanced basket, not a fixed-quantity buy-and-hold portfolio.
 
-#### Statistical Evaluation
+A Newey-West HAC test was conducted on the portfolio's daily arithmetic excess returns.
 
-The HAC-based test of mean daily excess returns produced a p-value of **0.3404**. This is not statistically significant at the 5% level.
+| Statistical measure | Result |
+|---|---:|
+| Observations | 501 |
+| Mean daily excess return | −0.001081 |
+| HAC standard error | 0.000412 |
+| HAC t-statistic | −2.6259 |
+| HAC p-value | 0.008642 |
+| 95% confidence interval | [−0.001888, −0.000274] |
 
-#### Research Decision: REJECT
+The estimated mean excess return was statistically significantly negative at the 5% level.
 
-The strategy generated a positive return and experienced lower volatility and maximum drawdown than buy-and-hold. However, it underperformed the benchmark in total return and Sharpe ratio, and the statistical test did not establish significant mean daily excess returns.
+This is evidence of underperformance relative to the benchmark under the tested assumptions—not evidence of a profitable strategy.
 
-The experiment therefore does not provide sufficient evidence of a benchmark-beating edge under the tested assumptions.
+The conclusion remained statistically significant across HAC lag choices of 1, 5, 10, and 20.
 
-### 4. Machine-Learning Experiment
+### 4.4 Individual-Stock Statistical Testing
 
-A logistic regression model was developed to investigate whether historical price-based features could help predict subsequent market direction.
+Individual stock-level tests used Newey-West HAC standard errors and Holm adjustment across ten tests.
 
-Features included:
+Walmart was the only individual stock with a statistically significant result after Holm correction (adjusted p-value: 0.040052).
 
-- Short- and medium-term returns
-- Rolling volatility
-- Price relative to moving averages
-- Moving-average relationships
+The estimated result was negative relative to the benchmark. It should not be interpreted as evidence of a positive trading edge.
 
-The experiment used a chronological training and testing split to avoid randomly mixing future observations into training data.
+---
 
-**Prediction results:**
+## 5. AAPL Research Experiments
 
-- ROC AUC: 0.4661
-- Accuracy: 0.4731
-- Majority-class baseline accuracy: 0.5449
+The original AAPL research pipeline remains part of the project.
 
-The model did not demonstrate useful predictive discrimination on the evaluated test sample.
+| Experiment | Main out-of-sample result | Decision |
+|---|---|---|
+| SMA baseline | Total return 33.15% vs 115.81% buy and hold | REJECT |
+| Mean reversion — close execution | 8.72% vs 42.54% buy and hold | REJECT |
+| Mean reversion — open execution | 11.50% vs 47.28% buy and hold | REJECT |
+| Static logistic regression | Approximately −0.82% vs 47.83% buy and hold | REJECT |
+| Walk-forward logistic regression | 13.00% vs 47.83% buy and hold | REJECT |
+| Ten-stock equal-weighted portfolio | 17.69% vs 97.34% benchmark | REJECT |
 
-The resulting trading strategy also underperformed buy-and-hold. Its total return was approximately -0.82%, compared with +47.83% for the benchmark.
+### Machine-Learning Evaluation
 
-### 5. Walk-Forward Validation
+The project includes two logistic-regression experiments.
 
-A walk-forward experiment evaluates model predictions through sequential historical training and testing rather than relying on a single static split.
+**Static model**
 
-The experiment investigates whether predictive performance remains consistent across successive evaluation periods.
+- Uses historical return, volatility, and moving-average-derived features.
+- Trains on data before 2024.
+- Evaluates on the 2024–2025 test period.
+- Excludes training observations whose target dates overlap the test period.
 
-The results did not establish reliable predictive superiority over the baseline, and the resulting strategy underperformed buy-and-hold.
+Test results included:
 
-### 6. Statistical and Robustness Analysis
+- ROC AUC: 0.4662.
+- Brier score: 0.2587.
+- Baseline Brier score: 0.2484.
 
-Additional research utilities investigate whether observed results are sensitive to assumptions and individual market observations.
+The model did not demonstrate useful predictive performance against the baseline.
 
-These include:
+**Expanding-window walk-forward model**
 
-- HAC-based statistical significance testing.
-- Ordinary t-tests as supplementary diagnostics.
-- Transaction-cost stress testing.
-- Parameter robustness analysis.
-- Best-day dependency analysis.
-- Extreme-day and market-regime analysis.
+The model is retrained sequentially using only labels available at each test date.
 
-For the close-execution mean-reversion experiment, the transaction-cost stress test produced the following results:
+Test results included:
 
-| Cost per Turnover | Strategy Total Return |
-|---:|---:|
-| 0.00% | 10.93% |
-| 0.05% | 9.82% |
-| 0.10% | 8.72% |
-| 0.25% | 5.50% |
-| 0.50% | 0.32% |
+- Accuracy: 0.5130.
+- ROC AUC: 0.4469.
+- Brier score: 0.2542.
+- Expanding historical-rate Brier baseline: 0.2485.
 
-Even with zero assumed transaction costs, the strategy underperformed buy-and-hold, which returned 42.54% over the same evaluation period.
+The resulting strategy returned approximately 13.00%, compared with 47.83% for buy and hold.
 
-## Experiment Registry
+Neither ML experiment established a convincing predictive or investment edge.
 
-The project maintains an experiment registry to record strategy hypotheses, evaluation periods, performance metrics, statistical evidence, and research decisions.
+---
 
-The registry currently records three principal strategy experiments:
+## 6. Statistical and Research Methodology
 
-- Moving-average baseline
-- Close-execution mean reversion
-- Open-execution mean reversion
+The project uses several safeguards to make historical strategy evaluation more rigorous.
 
-All three are currently marked **REJECT** based on their registered evaluation results.
+**Out-of-sample testing**
 
-Rejection does not establish that a strategy can never work. It indicates that the particular experiment did not establish sufficient evidence of an edge under its tested assumptions.
+Strategy parameters are selected using training data and evaluated on a separate test period. The principal OOS period for the reported experiments is 2024–2025.
 
-## Technology Stack
+**Execution-aware backtesting**
 
-- **Python** — research implementation
-- **pandas and NumPy** — data handling and numerical analysis
-- **SciPy** — statistical calculations
-- **statsmodels** — HAC statistical evaluation
-- **scikit-learn** — machine-learning experiments
-- **Matplotlib** — research visualizations
-- **pytest** — automated testing
-- **Jupyter Notebook** — exploratory analysis
-- **yfinance** — historical market-data retrieval
-- **ReportLab** — PDF report generation
-- **Markdown** — Markdown-to-HTML conversion
-- **BeautifulSoup** — HTML parsing for PDF generation
+The open-based mean-reversion implementation uses previous-session information to generate signals and measures subsequent open-to-open returns. This avoids treating information from the current session's close as if it were available at the same session's opening price.
 
-## Project Structure
+**Transaction-cost modelling**
+
+Returns are adjusted for an explicit transaction-cost assumption. Cost-sensitivity experiments examine whether conclusions change under alternative assumptions.
+
+**Walk-forward validation**
+
+The expanding-window ML experiment retrains sequentially using information available at each prediction date.
+
+**HAC statistical inference**
+
+Newey-West HAC standard errors account for heteroskedasticity and autocorrelation in daily return observations.
+
+**Multiple-testing correction**
+
+Holm adjustment is applied to the ten individual-stock statistical tests.
+
+**Experiment registry**
+
+Experiments are recorded with their configurations, performance metrics, statistical results, and research decisions. This makes it easier to compare results and avoid presenting only favourable experiments.
+
+---
+
+## 7. Technology Stack
+
+| Technology | Application |
+|---|---|
+| Python | Research and experiment orchestration |
+| pandas | Financial time-series manipulation |
+| NumPy | Numerical computation |
+| SciPy | Statistical computation |
+| statsmodels | HAC statistical inference |
+| scikit-learn | Logistic regression and ML evaluation |
+| Matplotlib | Research visualisations |
+| yfinance | Historical market-data acquisition |
+| pytest | Automated testing |
+| Markdown | Research reporting |
+| ReportLab | PDF report generation |
+
+---
+
+## 8. Repository Structure
+
+The repository is organised by research responsibility.
 
 ```text
 ai-quant-research-lab/
 │
+├── config/
+│   └── stock_universe.csv
+│
 ├── data/
+│   ├── build_adjusted_price_snapshot.py
+│   ├── download_multi_stock_data.py
+│   ├── validate_market_data.py
+│   ├── validate_multi_stock_data.py
+│   └── multi_stock/
 │
 ├── engine/
 │   ├── backtester.py
 │   ├── backtester_open.py
 │   ├── metrics.py
-│   ├── robustness.py
 │   ├── experiment_registry.py
-│   ├── registry_summary.py
-│   ├── generate_registry_report.py
-│   ├── generate_final_report.py
-│   ├── generate_pdf_report.py
+│   ├── run_mean_reversion_open_oos.py
+│   ├── run_multi_stock_mean_reversion.py
+│   ├── run_ml_experiment.py
+│   ├── run_walk_forward_experiment.py
+│   ├── analyze_multi_stock_results.py
+│   ├── analyze_multi_stock_cost_sensitivity.py
+│   ├── analyze_multi_stock_significance.py
 │   ├── run_research_pipeline.py
-│   └── test_*.py
+│   ├── test_*.py
+│   └── ...
 │
 ├── notebooks/
-│   ├── 01_exploratory_data_analysis.ipynb
-│   ├── 02_strategy_backtesting.ipynb
-│   ├── 03_machine_learning_experiment.ipynb
-│   ├── 04_final_research_report.ipynb
-│   └── 05_walk_forward_validation.ipynb
 │
 ├── reports/
 │   ├── experiment_registry.csv
-│   ├── registry_summary.csv
-│   ├── consolidated_research_report.md
+│   ├── multi_stock_mean_reversion_open_summary.csv
+│   ├── multi_stock_hac_significance.csv
+│   ├── multi_stock_portfolio_hac_significance.csv
 │   ├── comprehensive_research_report.md
-│   └── research outputs and visualizations
+│   └── ...
 │
-├── AI_Quant_Research_Lab_Final_Report_v2.pdf
-├── .gitignore
+├── README.md
 ├── requirements.txt
-└── README.md
+└── AI_Quant_Research_Lab_Final_Report_v2.pdf
 ```
 
-## Installation and Execution
+Market-data CSV files are maintained locally and excluded from Git. Generated research reports and selected analysis outputs are maintained in the repository.
 
-Clone the repository and navigate to its root directory.
+## 9. Running the Project
 
-Install the dependencies:
+### Requirements
+
+- Python 3.12 or compatible Python environment.
+- Git.
+- Internet access for downloading market data.
+- The dependencies listed in `requirements.txt`.
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Ash-Win-daft/ai-quant-research-lab.git
+cd ai-quant-research-lab
+```
+
+Install dependencies:
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-Run the research pipeline:
+### Market Data Preparation
+
+Raw market-data CSV files are excluded from Git because they are local research inputs.
+
+Download the configured multi-stock datasets:
+
+```bash
+python3 -m data.download_multi_stock_data
+```
+
+Validate the downloaded datasets:
+
+```bash
+python3 -m data.validate_multi_stock_data
+```
+
+The AAPL research pipeline requires three local input files:
+
+- `data/aapl_daily.csv`
+- `data/aapl_daily_extended.csv`
+- `data/aapl_adjusted_close.csv`
+
+The adjusted-close snapshot can be downloaded separately using:
+
+```bash
+python3 -m data.build_adjusted_price_snapshot
+```
+
+This command creates only `aapl_adjusted_close.csv`. It does not generate the two AAPL OHLC datasets.
+
+The snapshot builder refuses to overwrite an existing file. Run it only when the snapshot is missing and you intentionally want to create it.
+
+Make sure all three AAPL input files are present before executing the complete research pipeline.
+
+**Data note:** Multi-stock OHLC data is downloaded using yfinance with automatic price adjustment enabled. Historical data availability and provider adjustments can change, so independently downloaded datasets may not reproduce every result exactly.
+
+### Run the Unified Research Pipeline
 
 ```bash
 python3 -m engine.run_research_pipeline
 ```
 
-The unified research pipeline validates the required research input files, regenerates the experiment registry summary, creates the consolidated registry report and comprehensive research report, and generates the final PDF research report.
+The unified pipeline validates inputs, runs the configured ML and multi-stock experiments and analysis stages, synchronizes the experiment registry, and generates the consolidated and comprehensive reports. Existing AAPL research outputs are required as inputs.
 
-The pipeline uses previously generated experiment results. It does not automatically rerun the individual strategy experiments or download new market data.
-
-## Historical Data Requirements
-
-The research experiments use historical daily OHLCV data for Apple Inc. (AAPL).
-
-Two local datasets are required:
-
-| Dataset | Date Range | Observations |
-|---|---|---:|
-| `aapl_daily.csv` | 2021-01-04 to 2025-12-31 | 1,255 |
-| `aapl_daily_extended.csv` | 2021-01-04 to 2026-01-09 | 1,261 |
-
-The datasets must be placed in the project's `data/` directory using the filenames above.
-
-The CSV files are excluded from this public repository. Users must obtain the historical data independently and comply with the applicable data-provider terms.
-
-The project uses `yfinance` for historical market-data retrieval. Newly downloaded data may differ slightly from the original research datasets, so exact reproduction of the reported results is not guaranteed.
-
-## Research Report
-
-The project generates a comprehensive research report in Markdown
-and PDF formats.
-
-- `reports/comprehensive_research_report.md`
-- `AI_Quant_Research_Lab_Final_Report_v2.pdf`
-
-## Automated Testing
-
-The project uses pytest to validate backtesting logic, execution timing, transaction costs, input validation, registry summaries, and robustness utilities.
-
-Run the complete test suite:
+### Run Tests
 
 ```bash
 python3 -m pytest -v
 ```
 
-**Latest verified test run: 19 tests passed using pytest 9.1.1 and Python 3.12.2.**
+The current project test suite contains 19 passing tests.
 
-The automated tests are currently located in the `engine/` directory.
+**Data note:** Historical prices are obtained through yfinance. Provider availability and adjusted historical data can change, so independently downloading the data may not reproduce every historical output byte-for-byte.
 
-## Engineering and Research Practices
+---
 
-- Chronological training and out-of-sample separation.
-- Parameter selection using training data.
-- Explicit signal timing and open-to-open return calculations.
-- Transaction-cost modeling.
-- Benchmark comparisons.
-- HAC statistical testing.
-- Transaction-cost sensitivity analysis.
-- Experiment registration and rejection tracking.
-- Automated unit testing.
-- Reproducible local historical datasets.
+## 10. Limitations
 
-## Limitations
+The results should be interpreted within the scope of the research design.
 
-- Most current experiments focus on a single asset: AAPL.
-- Historical performance does not guarantee future results.
-- Transaction-cost assumptions do not fully represent bid-ask spreads, slippage, market impact, liquidity, or execution constraints.
-- A limited asset universe and evaluation period cannot establish broad strategy robustness.
-- Parameter selection and multiple strategy trials can introduce overfitting and selection bias.
-- Statistical non-significance does not prove that a strategy has no edge.
-- The current system is a research prototype, not production-ready trading infrastructure.
+1. **Limited universe:** Ten selected stocks are not representative of the entire US equity market.
+2. **Survivorship and selection bias:** The universe is not reconstructed using point-in-time historical constituents.
+3. **Small sector samples:** Sector-level comparisons are descriptive, not generalisable conclusions.
+4. **Simplified execution costs:** The transaction-cost model does not fully represent bid-ask spreads, market impact, liquidity constraints, or order execution uncertainty.
+5. **Adjusted-price assumptions:** The multi-stock data uses auto-adjusted OHLC prices. These are useful for historical analysis but do not represent executable historical market prices.
+6. **Limited strategy family:** The tested strategies do not cover the full range of systematic trading approaches.
+7. **Historical dependence:** Results from 2024–2025 cannot establish future performance.
+8. **Portfolio construction:** The equal-weighted daily rebalanced portfolio is a research benchmark, not a complete portfolio-management or risk-budgeting system.
 
-## Future Work
+The project is a quantitative research prototype, not production trading infrastructure or investment advice.
 
-- Expand testing to multiple assets and market regimes.
-- Improve transaction-cost, slippage, and market-impact modeling.
-- Strengthen walk-forward and robustness testing.
-- Investigate more sophisticated statistical and machine-learning models.
-- Improve experiment-pipeline reproducibility.
-- Develop a research dashboard for comparing strategies and tracking decisions.
-- Explore more rigorous methods of controlling multiple-testing and selection bias.
+---
 
-## Disclaimer
+## 11. Future Research Directions
 
-This project is for educational and quantitative research purposes only. It is not financial advice or a recommendation to trade any security.
+Potential extensions include:
+
+- Point-in-time universe construction to address survivorship bias.
+- Broader and more diverse equity universes.
+- Market microstructure and order-book analysis.
+- More realistic execution, spread, slippage, and market-impact models.
+- Volatility and market-regime classification.
+- Probabilistic forecasting and improved financial time-series ML.
+- Portfolio optimisation and risk allocation.
+- More extensive robustness testing across different market regimes.
+
+These extensions would build on the existing research framework rather than treating the current rejected strategies as successful trading systems.
+
+---
+
+## 12. Final Research Perspective
+
+The objective of this project was not to manufacture a profitable backtest.
+
+It was to build a research process capable of testing trading hypotheses, measuring their performance under explicit assumptions, and rejecting them when the evidence did not support them.
+
+Across six registered experiments, the strategies failed to establish a reliable positive edge over their respective benchmarks.
+
+The multi-stock expansion made that conclusion more informative: the underperformance persisted across the selected ten-stock universe, remained under zero transaction costs, and was statistically significant at the equal-weighted portfolio level in the tested period.
+
+**A credible quantitative research process must be willing to reject its own strategies.**
+
+That principle is the foundation of this project..
